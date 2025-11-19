@@ -1,0 +1,11 @@
+# Data files
+/data/
+*.jpg
+*.png
+
+# Weights
+*.pth
+
+# Other
+*._DS_STORE
+
