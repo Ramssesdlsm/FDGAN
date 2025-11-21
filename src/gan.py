@@ -52,11 +52,6 @@ class Discriminator(nn.Module):
 
         return out
     
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import torchvision.models as models
-
 class DenseNetEncoder(nn.Module):
     def __init__(self, pretrained: bool = True):
         super(DenseNetEncoder, self).__init__()
@@ -165,12 +160,10 @@ class FDGANGenerator(nn.Module):
             use_batch_norm=False,
         )
 
-        # Solo upsampling en block4 y block5, no en block6
         self.block4 = DecoderBlock(in_channels=512, grow_channels=256, out_channels=256, upsample=True)
         self.block5 = DecoderBlock(in_channels=512, grow_channels=128, out_channels=128, upsample=True)
-        self.block6 = DecoderBlock(in_channels=256, grow_channels=64, out_channels=64, upsample=False)
+        self.block6 = DecoderBlock(in_channels=256, grow_channels=64, out_channels=64, upsample=True)
 
-        # Final head sin upsampling
         self.final_head = nn.Sequential(
             ConvBlock(64, 32, kernel_size=3, padding=1, activation="leakyrelu"),
             nn.Conv2d(32, 3, kernel_size=3, padding=1),
@@ -199,9 +192,5 @@ class FDGANGenerator(nn.Module):
         d6 = self.block6(d5_skip)
 
         output = self.final_head(d6)
-        
-        # Ajustar al tamaño original si es necesario
-        if self.output_same_size and output.shape[-2:] != original_size:
-            output = F.interpolate(output, size=original_size, mode="bilinear", align_corners=False)
         
         return output
