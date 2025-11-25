@@ -6,7 +6,7 @@ class ScoreNet(nn.Module):
     
     This module implements a small encoder-decoder architecture using convolutional
     and transposed convolutional layers with ELU activations to estimate the score 
-    function :math:`\nabla_x \log p(x)`.
+    function :math:`\\nabla_x \\log p(x)`.
 
     Attributes
     ----------
