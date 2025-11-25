@@ -1,4 +1,5 @@
 import os
+from typing import Callable
 
 import kornia.filters
 import torch
@@ -164,7 +165,7 @@ class DehazingDataset(Dataset):
         Transform applied to both images in a sample.
     """
 
-    def __init__(self, root_dir: str, transform: callable | None = None):
+    def __init__(self, root_dir: str, transform: Callable | None = None):
         self.root_dir = root_dir
         self.transform = transform
         self.clear_dir = os.path.join(root_dir, "clear")
