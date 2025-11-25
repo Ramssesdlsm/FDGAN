@@ -4,9 +4,7 @@ from typing import Optional, Union, Dict, Any
 from .utils import ACTIVATION_MAP, POOLING_MAP
 
 class ConvBlock(nn.Module):
-    """
-    ConvBlock(in_channels, out_channels, kernel_size, stride=1, padding=False, activation="relu",
-              use_batch_norm=True, pooling_type=None, pooling_kernel=None, pooling_stride=None)
+    """A modular convolutional block for PyTorch models.
 
     A configurable 2D convolutional block that composes a Conv2d layer with optional BatchNorm,
     a selectable activation, and an optional pooling layer. The block is assembled into an
@@ -24,20 +22,21 @@ class ConvBlock(nn.Module):
         Stride of the convolution.
     padding : Union[int, str, bool], optional (default=False)
         Padding applied to the input before convolution. Behaviors:
-          - If the string "same" (case-insensitive) is provided, padding is set to kernel_size // 2
+
+        - If the string ``same`` (case-insensitive) is provided, padding is set to ``kernel_size // 2``
             (to approximately preserve spatial dimensions for odd kernel sizes).
-          - If a positive integer is provided, that value is used as padding.
-          - Any other value (including False or 0) results in zero padding.
-    activation : str, optional (default="relu")
-        Name of the activation to apply after convolution (looked up via ACTIVATION_MAP).
-        If the name is not found in ACTIVATION_MAP, nn.ReLU is used as a fallback.
+        - If a positive integer is provided, that value is used as padding.
+        - Any other value (including ``False`` or ``0``) results in zero padding.
+
+    activation : str, optional (default=``'relu'``)
+        Name of the activation to apply after convolution (looked up via ``ACTIVATION_MAP``).
     activation_kwargs : Optional[Dict[str, Any]], optional (default=None)
         Optional keyword arguments to instantiate the activation class. If None, the activation is created with its default constructor.
     use_batch_norm : bool, optional (default=True)
         If True, a nn.BatchNorm2d(out_channels) layer is inserted after the convolution.
         When batch normalization is used, the convolution is created with bias=False.
     pooling_type : Optional[str], optional
-        Name of the pooling operation to apply (looked up via POOLING_MAP), e.g. "max", "avg".
+        Name of the pooling operation to apply (looked up via ``POOLING_MAP``), e.g. ``max``, ``avg``.
         If None, no pooling layer is appended.
     pooling_kernel : Optional[int], optional
         Kernel size for the pooling layer. If not provided, pooling is not added.
@@ -127,8 +126,7 @@ class ConvBlock(nn.Module):
 
 
 class ConvTransposeBlock(nn.Module):
-    """
-    ConvTransposeBlock(in_channels, out_channels, kernel_size, stride=2, padding=1, output_padding=0, activation="relu", use_batch_norm=True)
+    """A modular transposed-convolution block for PyTorch models.
 
     A modular transposed-convolution block for PyTorch models that performs a ConvTranspose2d
     followed optionally by BatchNorm2d and a configurable activation.
@@ -215,8 +213,7 @@ class ConvTransposeBlock(nn.Module):
         return self.block(x)
 
 class ConfigurableCNN(nn.Module):
-    """
-    ConfigurableCNN(layers_config)
+    """A customizable convolutional neural network (CNN) built from a sequence of ConvBlock.
 
     A customizable convolutional neural network (CNN) built from a sequence of ConvBlock
     layers and ConvTransposeBlock layers defined by the user.
