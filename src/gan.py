@@ -2,7 +2,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision.models as models
-from collections import namedtuple
 from typing import Tuple, List, Any
 
 from .conv import ConfigurableCNN, ConvBlock, ConvTransposeBlock
@@ -349,10 +348,10 @@ class FDGANGenerator(nn.Module):
 
     References
     ----------
-    .. [1] Dong, Y., Liu, Y., Zhang, H., Chen, S., & Qiao, Y. (2020).
-       FD-GAN: Generative adversarial networks with fusion-discriminator 
-       for single image dehazing. *Proceedings of the AAAI Conference on 
-       Artificial Intelligence*, 34(7), 10729-10736.
+    Dong, Y., Liu, Y., Zhang, H., Chen, S., & Qiao, Y. (2020).
+        *FD-GAN: Generative adversarial networks with fusion-discriminator for
+        single image dehazing*. AAAI Conference on Artificial Intelligence,
+        34(07), 10729-10736.
     """
     def __init__(self, output_same_size=True):
         """Initializes the FD-GAN generator composed of a DenseNet-based encoder,
@@ -409,7 +408,9 @@ class FDGANGenerator(nn.Module):
         This method implements the U-Net like architecture of the FD-GAN generator,
         which includes an encoder, a decoder, and specialized side-branch and
         fusion modules to combine features from different scales.
+        
         The process is as follows:
+
         1. The input image is passed through an initial convolution.
         2. The result is processed by three encoder blocks to extract features.
         3. Side branches process features from early encoder stages (`x0`, `x2`).
