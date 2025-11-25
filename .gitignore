@@ -52,6 +52,9 @@ ENV/
 # Cluster files
 *.slurm
 
+# Docs
+/docs/
+
 # OS-generated files
 .DS_Store
 ._*
