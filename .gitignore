@@ -53,7 +53,7 @@ ENV/
 *.slurm
 
 # Docs
-/docs/
+/docs/build/
 
 # OS-generated files
 .DS_Store
