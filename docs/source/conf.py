@@ -29,10 +29,20 @@ extensions = [
 
 autodoc_mock_imports = [
     "torch",
+    "torch.nn",
+    "torch.optim",
+    "torch.utils",
+    "torch.utils.data",
     "torchvision",
+    "torchvision.transforms",
+    "torchvision.transforms.functional",  
+    "torchvision.models",
     "kornia",
+    "kornia.filters",                    
+    "kornia.losses",
     "numpy",
-    "PIL", 
+    "PIL",
+    "PIL.Image",
     "tqdm",
 ]
 
