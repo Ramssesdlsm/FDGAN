@@ -1,5 +1,5 @@
 import os
-from typing import Callable
+from typing import Callable, Union
 
 import kornia.filters
 import torch
@@ -165,7 +165,7 @@ class DehazingDataset(Dataset):
         Transform applied to both images in a sample.
     """
 
-    def __init__(self, root_dir: str, transform: Callable | None = None):
+    def __init__(self, root_dir: str, transform: Union[Callable, None] = None):
         self.root_dir = root_dir
         self.transform = transform
         self.clear_dir = os.path.join(root_dir, "clear")
@@ -180,7 +180,7 @@ class DehazingDataset(Dataset):
 
     def __getitem__(
         self, idx: int
-    ) -> tuple[torch.Tensor | Image.Image, torch.Tensor | Image.Image]:
+    ) -> tuple[Union[torch.Tensor, Image.Image], Union[torch.Tensor, Image.Image]]:
         """Load and return a hazy/clear image pair.
 
         Parameters
