@@ -1,0 +1,16 @@
+src.gan
+=======
+
+.. automodule:: src.gan
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      DecoderBlock
+      DenseNetEncoder
+      Discriminator
+      FDGANGenerator
+      SideBranch
+   

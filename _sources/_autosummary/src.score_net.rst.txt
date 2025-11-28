@@ -1,0 +1,12 @@
+src.score\_net
+==============
+
+.. automodule:: src.score_net
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ScoreNet
+   
