@@ -20,11 +20,11 @@ The loss function for the FD-GAN generator proposed in the original paper is giv
 
 For more details, please refer to the original paper linked above.
 
-To improve generation quality and training stability, we introduce a regularization term based on Denoising Score Matching (DSM). We train a separate Score Network ($s_\phi$) to estimate the gradient of the data distribution ($\nabla_x \log p_{data}(x)$). This network acts as an additional critic that is not adversarial, but rather guides the generator towards high-density regions of the natural image manifold. The modified objective function is:
+To improve generation quality and training stability, we introduce a regularization term based on Denoising Score Matching (DSM). We train a separate Score Network ($s_\phi$) to estimate the gradient of the data distribution ( $\nabla_x \log p_{data}(x)$ ). This network acts as an additional critic that is not adversarial, but rather guides the generator towards high-density regions of the natural image manifold. The modified objective function is:
 
 $$L_{total} = L_{FDGAN} + \lambda_{reg} \cdot L_{reg}$$
 
-Where the regularization term is defined as the squared norm of the estimated score on generated samples:
+Where:
 - $L$ is the total generator loss.
 - $L_{FDGAN}$ is the original generator loss as defined in the paper.
 - $L_{reg}$ is the regularization term.
