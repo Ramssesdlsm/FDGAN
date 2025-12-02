@@ -35,3 +35,37 @@ The regularization term is defined as the squared norm of the estimated score on
 $$L_{reg} = \mathbb{E}_{z} \left[ \| s_\phi(G(z)) \|_2^2 \right]$$
 
 By minimizing the norm of the score (implemented as an MSE between the predicted noise/score and zero), we force the generator to produce samples that reside on the "peaks" of the real data distribution as estimated by the score network. This encourages the generator to create more realistic images that align better with the underlying data manifold, thereby improving the overall quality of dehazed images.
+
+## Installation
+```bash
+pip install -r requirements.txt
+```
+
+## Training
+### 1. Data Preparation
+The training script expect the dataset to be organized in the following structure:
+```
+data/
+  └── train/
+      ├── clear/  # Ground truth images
+      └── hazy/   # Hazy images (same filenames as clear)
+```
+Make sure to update the `CONFIG` dictionary in `src/training.py` if your data is located elsewhere.
+### 2. Run Training
+Ensure you are in the project root directory.
+```bash
+# Add current directory to python path
+export PYTHONPATH=$PYTHONPATH:.
+
+# Start training
+python -m src.training
+```
+
+## Generate dehazed images
+You can download the pre-trained weights directly from our [Hugging Face Repository](https://huggingface.co/Ramssesdlsm/FDGAN). 
+Alternatively, you can download the pre-trained weights using the `generate_dehazed.py` script, leaving the parameter `--checkpoint` as the default value.
+```bash
+python generate_dehazed.py --input path/to/haze/image.jpg \
+--output path/to/dehazed/image.jpg \
+--img-size 256 320
+```
