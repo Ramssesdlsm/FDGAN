@@ -4,6 +4,7 @@ import sys
 
 import numpy as np
 import torch
+from huggingface_hub import hf_hub_download
 from PIL import Image
 from torchvision import transforms
 
@@ -13,6 +14,10 @@ if ROOT not in sys.path:
 
 from src.gan import FDGANGenerator
 
+def get_pretrained_fdgan():
+    """Download the pretrained FDGAN generator from HuggingFace Hub."""
+    model_path = hf_hub_download(repo_id="Ramssesdlsm/FDGAN", filename="FDGAN-generator.pth")
+    return model_path
 
 def pil_from_tensor(tensor: torch.Tensor) -> Image.Image:
     """Convert a normalized PyTorch image tensor into a PIL Image.
@@ -51,8 +56,8 @@ def main():
     parser.add_argument(
         "--checkpoint",
         required=False,
-        default="./checkpoints/SSM_Model/gen_epoch_19.pth",
-        help="Path to the generator .pth file. Default: ./checkpoints/SSM_Model/gen_epoch_19.pth",
+        default=get_pretrained_fdgan(),
+        help="Path to the generator .pth file. Default: pretrained FDGAN model from HuggingFace Hub.",
     )
     parser.add_argument(
         "--input", required=True, help="Input hazy image (JPG, PNG, etc.)"
@@ -89,7 +94,7 @@ def main():
         raise FileNotFoundError(f"Checkpoint not found: {args.checkpoint}")
 
     # Load the generator state
-    state = torch.load(args.checkpoint, map_location=device)
+    state = torch.load(args.checkpoint, map_location=device, weights_only=True)
 
     gen.load_state_dict(state)
 
