@@ -1,0 +1,434 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>src.gan &mdash; FDGAN 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=2709fde1"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="src.losses" href="src.losses.html" />
+    <link rel="prev" title="src.conv" href="src.conv.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            FDGAN
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="src.html">src</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="src.conv.html">src.conv</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">src.gan</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#src.gan.DecoderBlock"><code class="docutils literal notranslate"><span class="pre">DecoderBlock</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.gan.DenseNetEncoder"><code class="docutils literal notranslate"><span class="pre">DenseNetEncoder</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.gan.Discriminator"><code class="docutils literal notranslate"><span class="pre">Discriminator</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.gan.FDGANGenerator"><code class="docutils literal notranslate"><span class="pre">FDGANGenerator</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.gan.SideBranch"><code class="docutils literal notranslate"><span class="pre">SideBranch</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="src.losses.html">src.losses</a></li>
+<li class="toctree-l3"><a class="reference internal" href="src.mlp.html">src.mlp</a></li>
+<li class="toctree-l3"><a class="reference internal" href="src.score_net.html">src.score_net</a></li>
+<li class="toctree-l3"><a class="reference internal" href="src.training.html">src.training</a></li>
+<li class="toctree-l3"><a class="reference internal" href="src.utils.html">src.utils</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">FDGAN</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../api.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="src.html">src</a></li>
+      <li class="breadcrumb-item active">src.gan</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/_autosummary/src.gan.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-src.gan">
+<span id="src-gan"></span><h1>src.gan<a class="headerlink" href="#module-src.gan" title="Link to this heading"></a></h1>
+<p class="rubric">Classes</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#src.gan.DecoderBlock" title="src.gan.DecoderBlock"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DecoderBlock</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Decoder block implementing a dense structure with optional upsampling.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#src.gan.DenseNetEncoder" title="src.gan.DenseNetEncoder"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DenseNetEncoder</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Encoder based on the DenseNet121 architecture for feature extraction.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#src.gan.Discriminator" title="src.gan.Discriminator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Discriminator</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Discriminator network for GANs using a configurable CNN architecture.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#src.gan.FDGANGenerator" title="src.gan.FDGANGenerator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FDGANGenerator</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Generator module for the FD-GAN (Fusion-Discriminator GAN) architecture.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#src.gan.SideBranch" title="src.gan.SideBranch"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SideBranch</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Lateral branch for multi-scale feature fusion.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="src.gan.DecoderBlock">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.gan.</span></span><span class="sig-name descname"><span class="pre">DecoderBlock</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/gan.html#DecoderBlock"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.gan.DecoderBlock" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Decoder block implementing a dense structure with optional upsampling.</p>
+<p>This block enriches feature maps through a local dense connection, concatenates
+the input with newly generated features, reduces dimensionality, and optionally
+upsamples the spatial resolution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Variables<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dense</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">nn.Sequential</span></code>) – Dense sub-block (Conv 1x1 -&gt; Conv 3x3).</p></li>
+<li><p><strong>up_trans</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ConvTransposeBlock</span></code>) – Transition block that reduces channels via a 1x1 projection.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Initializes the decoder block composed of a dense sub-block,
+a transition projection block, and an optional upsampling step.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>in_channels</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – Number of input channels.</p></li>
+<li><p><strong>grow_channels</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – Growth rate defining how many new channels the dense sub-block generates.</p></li>
+<li><p><strong>out_channels</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – Number of output channels after the projection block.</p></li>
+<li><p><strong>upsample</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>, <em>optional</em>) – If True, upsamples the output feature map by a factor of 2
+using nearest-neighbor interpolation. Default is True.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="src.gan.DecoderBlock.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">torch.Tensor</span></span></span><a class="reference internal" href="../_modules/src/gan.html#DecoderBlock.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.gan.DecoderBlock.forward" title="Link to this definition"></a></dt>
+<dd><p>Forward pass through the DecoderBlock.</p>
+<p>This method processes the input tensor by first applying a dense layer,
+concatenating its output with the original input tensor, and then
+upsampling the result using a transposed convolution. An optional
+additional upsampling step via nearest-neighbor interpolation can be
+applied. The input feature map tensor, expected to have a shape of
+(B, C, H, W), where B is the batch size, C is the number of
+channels, and H, W are the height and width.
+The output upsampled feature map tensor. The spatial dimensions (H, W)
+are increased, and the number of channels is modified by the layers
+within the block.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code>) – Input feature map tensor of shape (B, C, H, W).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Output upsampled feature map tensor with increased spatial dimensions (H, W).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="src.gan.DenseNetEncoder">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.gan.</span></span><span class="sig-name descname"><span class="pre">DenseNetEncoder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/gan.html#DenseNetEncoder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.gan.DenseNetEncoder" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Encoder based on the DenseNet121 architecture for feature extraction.</p>
+<p>This class encapsulates a DenseNet121 network (optionally pre-trained) and splits
+its layers into sequential blocks to facilitate access to feature maps at
+different spatial resolutions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Variables<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>features</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">nn.Sequential</span></code>) – Original feature layers from DenseNet121.</p></li>
+<li><p><strong>block1</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">nn.Sequential</span></code>) – First dense block and transition layer, reducing spatial resolution.</p></li>
+<li><p><strong>block2</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">nn.Sequential</span></code>) – Second dense block and transition layer.</p></li>
+<li><p><strong>block3</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">nn.Sequential</span></code>) – Third dense block and transition layer.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Initializes the DenseNet121 encoder and extracts its feature blocks.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pretrained</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>, <em>optional</em>) – If True, loads ImageNet pre-trained weights. Default is True.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="src.gan.Discriminator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.gan.</span></span><span class="sig-name descname"><span class="pre">Discriminator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/gan.html#Discriminator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.gan.Discriminator" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Discriminator network for GANs using a configurable CNN architecture.</p>
+<p>This module implements a discriminator network that processes input images
+through a series of convolutional layers defined by a configuration list.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Variables<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>cnn</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ConfigurableCNN</span></code>) – The configurable CNN used for feature extraction and classification.</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">img_shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">)</span>  <span class="c1"># Example image shape</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">conv_layers_config</span> <span class="o">=</span> <span class="p">[</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="s1">&#39;out_channels&#39;</span><span class="p">:</span> <span class="mi">64</span><span class="p">,</span> <span class="s1">&#39;kernel_size&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="s1">&#39;stride&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;padding&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;activation&#39;</span><span class="p">:</span> <span class="s1">&#39;leakyrelu&#39;</span><span class="p">},</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="s1">&#39;out_channels&#39;</span><span class="p">:</span> <span class="mi">128</span><span class="p">,</span> <span class="s1">&#39;kernel_size&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="s1">&#39;stride&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;padding&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;activation&#39;</span><span class="p">:</span> <span class="s1">&#39;leakyrelu&#39;</span><span class="p">},</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="s1">&#39;out_channels&#39;</span><span class="p">:</span> <span class="mi">256</span><span class="p">,</span> <span class="s1">&#39;kernel_size&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="s1">&#39;stride&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;padding&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;activation&#39;</span><span class="p">:</span> <span class="s1">&#39;leakyrelu&#39;</span><span class="p">},</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="s1">&#39;out_channels&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;kernel_size&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="s1">&#39;stride&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;padding&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;activation&#39;</span><span class="p">:</span> <span class="s1">&#39;linear&#39;</span><span class="p">},</span>
+<span class="gp">... </span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">discriminator</span> <span class="o">=</span> <span class="n">Discriminator</span><span class="p">(</span><span class="n">img_shape</span><span class="p">,</span> <span class="n">conv_layers_config</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">)</span>  <span class="c1"># Batch of 4 images</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">output</span> <span class="o">=</span> <span class="n">discriminator</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">output</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="go">torch.Size([4, 1, 1, 1])</span>
+</pre></div>
+</div>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>The input images must match the specified <cite>img_shape</cite>.</p></li>
+<li><p>The final output shape depends on the convolutional layers configuration.</p></li>
+</ul>
+<p>Initialize the Discriminator network.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>img_shape</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple[int</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">int]</span></code>) – The shape of the input images as (channels, height, width).</p></li>
+<li><p><strong>conv_layers_config</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">List[dict]</span></code>) – A list of dictionaries specifying the configuration of each convolutional layer.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>RuntimeError</strong> – If the ConfigurableCNN construction fails.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="src.gan.Discriminator.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">torch.Tensor</span></span></span><a class="reference internal" href="../_modules/src/gan.html#Discriminator.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.gan.Discriminator.forward" title="Link to this definition"></a></dt>
+<dd><p>Forward pass through the Discriminator.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>img</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code>) – Input tensor representing a batch of images with shape (batch_size, channels, height, width).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Output tensor after passing through the discriminator network.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>TypeError</strong> – If the input is not a torch.Tensor.</p></li>
+<li><p><strong>ValueError</strong> – If the input tensor does not have 4 dimensions.</p></li>
+<li><p><strong>ValueError</strong> – If the input tensor’s shape does not match the expected image shape.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="src.gan.FDGANGenerator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.gan.</span></span><span class="sig-name descname"><span class="pre">FDGANGenerator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/gan.html#FDGANGenerator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.gan.FDGANGenerator" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Generator module for the FD-GAN (Fusion-Discriminator GAN) architecture.</p>
+<p>Implements a densely connected U-Net-like structure with lateral side branches
+for multi-scale feature fusion. Designed for image-to-image translation tasks,
+such as haze removal (dehazing).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Variables<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>encoder</strong> (<a class="reference internal" href="#src.gan.DenseNetEncoder" title="src.gan.DenseNetEncoder"><code class="xref py py-class docutils literal notranslate"><span class="pre">DenseNetEncoder</span></code></a>) – Pre-trained backbone used for feature extraction.</p></li>
+<li><p><strong>conv_in</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ConvBlock</span></code>) – Initial input convolution preserving spatial resolution.</p></li>
+<li><p><strong>side_branch2</strong> (<em>side_branch1</em><em>,</em>) – Lateral branches for processing and fusing low-level features.</p></li>
+<li><p><strong>fusion_bottleneck</strong> (<em>fusion_x1</em><em>,</em>) – Fusion blocks combining side-branch features with the main encoder stream.</p></li>
+<li><p><strong>block6</strong> (<em>block4</em><em>, </em><em>block5</em><em>,</em>) – Decoder stages for progressively recovering spatial resolution.</p></li>
+<li><p><strong>final_head</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">nn.Sequential</span></code>) – Final projection layers mapping features to the RGB image space.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">generator</span> <span class="o">=</span> <span class="n">FDGANGenerator</span><span class="p">(</span><span class="n">output_same_size</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">256</span><span class="p">)</span>  <span class="c1"># Batch of 4 images</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">output</span> <span class="o">=</span> <span class="n">generator</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">output</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="go">torch.Size([4, 3, 256, 256])</span>
+</pre></div>
+</div>
+<p class="rubric">References</p>
+<dl class="simple">
+<dt>Dong, Y., Liu, Y., Zhang, H., Chen, S., &amp; Qiao, Y. (2020).</dt><dd><p><em>FD-GAN: Generative adversarial networks with fusion-discriminator for
+single image dehazing</em>. AAAI Conference on Artificial Intelligence,
+34(07), 10729-10736.</p>
+</dd>
+</dl>
+<p>Initializes the FD-GAN generator composed of a DenseNet-based encoder,
+lateral side branches, multi-scale fusion modules, decoder stages,
+and a final reconstruction head.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>output_same_size</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>, <em>optional</em>) – Reserved flag indicating whether the output should match the input
+spatial resolution. The current implementation always preserves size.
+Default is True.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="src.gan.FDGANGenerator.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">torch.Tensor</span></span></span><a class="reference internal" href="../_modules/src/gan.html#FDGANGenerator.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.gan.FDGANGenerator.forward" title="Link to this definition"></a></dt>
+<dd><p>Forward pass through the FD-GAN Generator.</p>
+<p>This method implements the U-Net like architecture of the FD-GAN generator,
+which includes an encoder, a decoder, and specialized side-branch and
+fusion modules to combine features from different scales.</p>
+<p>The process is as follows:</p>
+<ol class="arabic simple">
+<li><p>The input image is passed through an initial convolution.</p></li>
+<li><p>The result is processed by three encoder blocks to extract features.</p></li>
+<li><p>Side branches process features from early encoder stages (<cite>x0</cite>, <cite>x2</cite>).</p></li>
+<li><dl class="simple">
+<dt>Fusion modules combine these side-branch features with deeper features</dt><dd><p>to create inputs for the decoder and a fused skip connection.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>The decoder, consisting of three blocks, reconstructs the image, using</dt><dd><p>skip connections from the encoder and the fused feature maps.</p>
+</dd>
+</dl>
+</li>
+<li><p>A final head layer produces the output image.</p></li>
+</ol>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>img</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code>) – Input normalized image in the range [-1, 1].
+Expected shape: (B, 3, H, W), where H and W are multiples of 32.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Generated image in the range [-1, 1] with the same spatial resolution
+as the input.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="src.gan.SideBranch">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.gan.</span></span><span class="sig-name descname"><span class="pre">SideBranch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/gan.html#SideBranch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.gan.SideBranch" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Lateral branch for multi-scale feature fusion.</p>
+<p>Performs downsampling through Average Pooling followed by a 1x1 projection
+convolution to adjust the channel dimension. This is used to inject
+high-resolution information into deeper stages of the network.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Variables<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>proj</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ConvBlock</span></code>) – Convolutional block that performs the linear projection
+(without Batch Normalization).</p>
+</dd>
+</dl>
+<p>Initializes the lateral branch used for multi-scale feature fusion.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>in_channels</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – Number of channels of the input feature map.</p></li>
+<li><p><strong>out_channels</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – Number of output channels after the 1x1 projection.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="src.gan.SideBranch.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">torch.Tensor</span></span></span><a class="reference internal" href="../_modules/src/gan.html#SideBranch.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.gan.SideBranch.forward" title="Link to this definition"></a></dt>
+<dd><p>Forward pass through the SideBranch network.</p>
+<p>The input tensor is first downsampled by a factor of 2 using average
+pooling and then passed through a projection layer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code>) – Input feature map tensor of shape (B, C, H, W).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Projected feature map tensor after downsampling and 1x1 convolution.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="src.conv.html" class="btn btn-neutral float-left" title="src.conv" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="src.losses.html" class="btn btn-neutral float-right" title="src.losses" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Ramsses De Los Santos Mendoza.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

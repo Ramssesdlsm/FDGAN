@@ -1,0 +1,274 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>src.conv &mdash; FDGAN 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=2709fde1"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="src.gan" href="src.gan.html" />
+    <link rel="prev" title="src" href="src.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            FDGAN
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="src.html">src</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">src.conv</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#src.conv.ConfigurableCNN"><code class="docutils literal notranslate"><span class="pre">ConfigurableCNN</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.conv.ConvBlock"><code class="docutils literal notranslate"><span class="pre">ConvBlock</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.conv.ConvTransposeBlock"><code class="docutils literal notranslate"><span class="pre">ConvTransposeBlock</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="src.gan.html">src.gan</a></li>
+<li class="toctree-l3"><a class="reference internal" href="src.losses.html">src.losses</a></li>
+<li class="toctree-l3"><a class="reference internal" href="src.mlp.html">src.mlp</a></li>
+<li class="toctree-l3"><a class="reference internal" href="src.score_net.html">src.score_net</a></li>
+<li class="toctree-l3"><a class="reference internal" href="src.training.html">src.training</a></li>
+<li class="toctree-l3"><a class="reference internal" href="src.utils.html">src.utils</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">FDGAN</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../api.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="src.html">src</a></li>
+      <li class="breadcrumb-item active">src.conv</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/_autosummary/src.conv.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-src.conv">
+<span id="src-conv"></span><h1>src.conv<a class="headerlink" href="#module-src.conv" title="Link to this heading"></a></h1>
+<p class="rubric">Classes</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#src.conv.ConfigurableCNN" title="src.conv.ConfigurableCNN"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConfigurableCNN</span></code></a>(*args, **kwargs)</p></td>
+<td><p>A customizable convolutional neural network (CNN) built from a sequence of ConvBlock.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#src.conv.ConvBlock" title="src.conv.ConvBlock"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConvBlock</span></code></a>(*args, **kwargs)</p></td>
+<td><p>A modular convolutional block for PyTorch models.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#src.conv.ConvTransposeBlock" title="src.conv.ConvTransposeBlock"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConvTransposeBlock</span></code></a>(*args, **kwargs)</p></td>
+<td><p>A modular transposed-convolution block for PyTorch models.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="src.conv.ConfigurableCNN">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.conv.</span></span><span class="sig-name descname"><span class="pre">ConfigurableCNN</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/conv.html#ConfigurableCNN"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.conv.ConfigurableCNN" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>A customizable convolutional neural network (CNN) built from a sequence of ConvBlock.</p>
+<p>A customizable convolutional neural network (CNN) built from a sequence of ConvBlock
+layers and ConvTransposeBlock layers defined by the user.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>layers_config</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">List[Dict[str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Any]]</span></code>) – A list of dictionaries, each specifying the parameters for a ConvBlock or ConvTransposeBlock.
+Each dictionary should contain keys corresponding to the ConvBlock’s
+constructor parameters (e.g., in_channels, out_channels, kernel_size, etc.).</p>
+</dd>
+<dt class="field-even">Variables<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>cnn</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">nn.Sequential</span></code>) – The assembled sequential CNN composed of the specified ConvBlock and ConvTransposeBlock layers.</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">layers_config</span> <span class="o">=</span> <span class="p">[</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="n">conv</span><span class="p">:{</span><span class="s2">&quot;in_channels&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;out_channels&quot;</span><span class="p">:</span> <span class="mi">32</span><span class="p">,</span> <span class="s2">&quot;kernel_size&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;padding&quot;</span><span class="p">:</span> <span class="s2">&quot;same&quot;</span><span class="p">}},</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="n">conv</span><span class="p">:{</span><span class="s2">&quot;in_channels&quot;</span><span class="p">:</span> <span class="mi">32</span><span class="p">,</span> <span class="s2">&quot;out_channels&quot;</span><span class="p">:</span> <span class="mi">64</span><span class="p">,</span> <span class="s2">&quot;kernel_size&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;padding&quot;</span><span class="p">:</span> <span class="s2">&quot;same&quot;</span><span class="p">,</span> <span class="s2">&quot;pooling_type&quot;</span><span class="p">:</span> <span class="s2">&quot;max&quot;</span><span class="p">,</span> <span class="s2">&quot;pooling_kernel&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}},</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="n">conv_transpose</span><span class="p">:{</span><span class="s2">&quot;in_channels&quot;</span><span class="p">:</span> <span class="mi">64</span><span class="p">,</span> <span class="s2">&quot;out_channels&quot;</span><span class="p">:</span> <span class="mi">128</span><span class="p">,</span> <span class="s2">&quot;kernel_size&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;padding&quot;</span><span class="p">:</span> <span class="s2">&quot;same&quot;</span><span class="p">}}</span>
+<span class="gp">... </span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">ConfigurableCNN</span><span class="p">(</span><span class="n">layers_config</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="src.conv.ConvBlock">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.conv.</span></span><span class="sig-name descname"><span class="pre">ConvBlock</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/conv.html#ConvBlock"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.conv.ConvBlock" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>A modular convolutional block for PyTorch models.</p>
+<p>A configurable 2D convolutional block that composes a Conv2d layer with optional BatchNorm,
+a selectable activation, and an optional pooling layer. The block is assembled into an
+nn.Sequential and applied as-is in forward.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>in_channels</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – Number of channels in the input image/tensor.</p></li>
+<li><p><strong>out_channels</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – Number of channels produced by the convolution.</p></li>
+<li><p><strong>kernel_size</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – Size of the convolving kernel (assumed square).</p></li>
+<li><p><strong>stride</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">optional</span> <span class="pre">(default=1)</span></code>) – Stride of the convolution.</p></li>
+<li><p><strong>padding</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Union[int</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">bool]</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">optional</span> <span class="pre">(default=False)</span></code>) – <p>Padding applied to the input before convolution. Behaviors:</p>
+<ul>
+<li><dl class="simple">
+<dt>If the string <code class="docutils literal notranslate"><span class="pre">same</span></code> (case-insensitive) is provided, padding is set to <code class="docutils literal notranslate"><span class="pre">kernel_size</span> <span class="pre">//</span> <span class="pre">2</span></code></dt><dd><p>(to approximately preserve spatial dimensions for odd kernel sizes).</p>
+</dd>
+</dl>
+</li>
+<li><p>If a positive integer is provided, that value is used as padding.</p></li>
+<li><p>Any other value (including <code class="docutils literal notranslate"><span class="pre">False</span></code> or <code class="docutils literal notranslate"><span class="pre">0</span></code>) results in zero padding.</p></li>
+</ul>
+</p></li>
+<li><p><strong>activation</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">optional</span> <span class="pre">(default=````</span></code>’relu’<code class="docutils literal notranslate"><span class="pre">:class:`</span></code>)`) – Name of the activation to apply after convolution (looked up via <code class="docutils literal notranslate"><span class="pre">ACTIVATION_MAP</span></code>).</p></li>
+<li><p><strong>activation_kwargs</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Optional[Dict[str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Any]]</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">optional</span> <span class="pre">(default=None)</span></code>) – Optional keyword arguments to instantiate the activation class. If None, the activation is created with its default constructor.</p></li>
+<li><p><strong>use_batch_norm</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">optional</span> <span class="pre">(default=True)</span></code>) – If True, a nn.BatchNorm2d(out_channels) layer is inserted after the convolution.
+When batch normalization is used, the convolution is created with bias=False.</p></li>
+<li><p><strong>pooling_type</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Optional[str]</span></code>, <em>optional</em>) – Name of the pooling operation to apply (looked up via <code class="docutils literal notranslate"><span class="pre">POOLING_MAP</span></code>), e.g. <code class="docutils literal notranslate"><span class="pre">max</span></code>, <code class="docutils literal notranslate"><span class="pre">avg</span></code>.
+If None, no pooling layer is appended.</p></li>
+<li><p><strong>pooling_kernel</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Optional[int]</span></code>, <em>optional</em>) – Kernel size for the pooling layer. If not provided, pooling is not added.</p></li>
+<li><p><strong>pooling_stride</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Optional[int]</span></code>, <em>optional</em>) – Stride for the pooling layer. If None, defaults to pooling_kernel.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Variables<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>block</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">nn.Sequential</span></code>) – The assembled sequential block containing the convolution, optional batch norm,
+activation, and optional pooling.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – If pooling_type is provided but not found in POOLING_MAP.</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>The convolution’s bias is disabled when batch normalization is enabled to avoid redundant
+affine parameters.</p></li>
+<li><p>Activation and pooling implementations are looked up using ACTIVATION_MAP and POOLING_MAP,
+respectively; those mappings must be defined in the module scope and map lowercase names
+to callable nn.Module classes (not instances).</p></li>
+<li><p>The forward pass simply delegates to self.block(x) and returns the transformed tensor.</p></li>
+</ul>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Construct a conv block with same-padding, batch norm and max pooling</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ConvBlock</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="s2">&quot;same&quot;</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s2">&quot;relu&quot;</span><span class="p">,</span>
+<span class="gp">... </span>          <span class="n">use_batch_norm</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">pooling_type</span><span class="o">=</span><span class="s2">&quot;max&quot;</span><span class="p">,</span> <span class="n">pooling_kernel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="src.conv.ConvTransposeBlock">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.conv.</span></span><span class="sig-name descname"><span class="pre">ConvTransposeBlock</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/conv.html#ConvTransposeBlock"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.conv.ConvTransposeBlock" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>A modular transposed-convolution block for PyTorch models.</p>
+<p>A modular transposed-convolution block for PyTorch models that performs a ConvTranspose2d
+followed optionally by BatchNorm2d and a configurable activation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>in_channels</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – Number of channels in the input feature map.</p></li>
+<li><p><strong>out_channels</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – Number of channels produced by the transposed convolution.</p></li>
+<li><p><strong>kernel_size</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – Size of the convolution kernel.</p></li>
+<li><p><strong>stride</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>, <em>optional</em>) – Stride of the transposed convolution. Default is 2.</p></li>
+<li><p><strong>padding</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>, <em>optional</em>) – Padding added to both sides of the input. Default is 1.</p></li>
+<li><p><strong>output_padding</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>, <em>optional</em>) – Additional size added to one side of the output shape. Default is 0.</p></li>
+<li><p><strong>activation</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <em>optional</em>) – Name of the activation to apply after convolution (looked up via ACTIVATION_MAP).
+Defaults to “relu”. The activation class is instantiated with its default constructor.</p></li>
+<li><p><strong>activation_kwargs</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Optional[Dict[str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Any]]</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">optional</span> <span class="pre">(default=None)</span></code>) – Optional keyword arguments to instantiate the activation class. If None, the activation is created with its default constructor.</p></li>
+<li><p><strong>use_batch_norm</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>, <em>optional</em>) – If True, insert nn.BatchNorm2d after the transposed convolution. Default is True.</p></li>
+<li><p><strong>Behavior</strong></p></li>
+<li><p><strong>--------</strong></p></li>
+<li><p><strong>containing</strong> (<em>- Constructs an nn.Sequential block</em>) – <ol class="arabic simple">
+<li><p>nn.ConvTranspose2d(…, bias=not use_batch_norm)</p></li>
+<li><p>nn.BatchNorm2d(out_channels) if use_batch_norm is True</p></li>
+<li><p>The activation layer resolved from ACTIVATION_MAP</p></li>
+</ol>
+</p></li>
+<li><p><strong>used</strong> (<em>- The ConvTranspose2d layer's bias is disabled when batch normalization is</em>) – (bias=False) to avoid redundant affine parameters.</p></li>
+<li><p><strong>shapes</strong> (<em>Input / Output</em>)</p></li>
+<li><p><strong>---------------------</strong></p></li>
+<li><p><strong>Input</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code> of <code class="xref py py-class docutils literal notranslate"><span class="pre">shape</span> <span class="pre">(N</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">in_channels</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">H</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">W)</span></code>)</p></li>
+<li><p><strong>Output</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code> of <code class="xref py py-class docutils literal notranslate"><span class="pre">shape</span> <span class="pre">(N</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">out_channels</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">H_out</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">W_out)</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">where</span> <span class="pre">H_out</span></code> and <code class="xref py py-class docutils literal notranslate"><span class="pre">W_out</span> <span class="pre">depend</span></code>) – on kernel_size, stride, padding, and output_padding.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">block</span> <span class="o">=</span> <span class="n">ConvTransposeBlock</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">out</span> <span class="o">=</span> <span class="n">block</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>  <span class="c1"># x: (N, 128, H, W) -&gt; out: (N, 64, H_out, W_out)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="src.html" class="btn btn-neutral float-left" title="src" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="src.gan.html" class="btn btn-neutral float-right" title="src.gan" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Ramsses De Los Santos Mendoza.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

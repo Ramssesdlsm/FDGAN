@@ -1,0 +1,19 @@
+src.losses
+==========
+
+.. automodule:: src.losses
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      denoising_score_matching_loss
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      FDGANLoss
+      PerceptualLoss
+   

@@ -1,0 +1,6 @@
+src.training
+============
+
+.. automodule:: src.training
+
+   

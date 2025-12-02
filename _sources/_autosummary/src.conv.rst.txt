@@ -1,0 +1,14 @@
+src.conv
+========
+
+.. automodule:: src.conv
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ConfigurableCNN
+      ConvBlock
+      ConvTransposeBlock
+   

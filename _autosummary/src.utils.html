@@ -1,0 +1,274 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>src.utils &mdash; FDGAN 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=2709fde1"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="src.training" href="src.training.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            FDGAN
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="src.html">src</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="src.conv.html">src.conv</a></li>
+<li class="toctree-l3"><a class="reference internal" href="src.gan.html">src.gan</a></li>
+<li class="toctree-l3"><a class="reference internal" href="src.losses.html">src.losses</a></li>
+<li class="toctree-l3"><a class="reference internal" href="src.mlp.html">src.mlp</a></li>
+<li class="toctree-l3"><a class="reference internal" href="src.score_net.html">src.score_net</a></li>
+<li class="toctree-l3"><a class="reference internal" href="src.training.html">src.training</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">src.utils</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#src.utils.DehazingDataset"><code class="docutils literal notranslate"><span class="pre">DehazingDataset</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.utils.get_lf_hf"><code class="docutils literal notranslate"><span class="pre">get_lf_hf()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.utils.prepare_discriminator_input"><code class="docutils literal notranslate"><span class="pre">prepare_discriminator_input()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#src.utils.weights_init_normal"><code class="docutils literal notranslate"><span class="pre">weights_init_normal()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">FDGAN</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../api.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="src.html">src</a></li>
+      <li class="breadcrumb-item active">src.utils</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/_autosummary/src.utils.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-src.utils">
+<span id="src-utils"></span><h1>src.utils<a class="headerlink" href="#module-src.utils" title="Link to this heading"></a></h1>
+<p class="rubric">Functions</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#src.utils.get_lf_hf" title="src.utils.get_lf_hf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_lf_hf</span></code></a>(images)</p></td>
+<td><p>Compute the low- and high-frequency components of a batch of images.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#src.utils.prepare_discriminator_input" title="src.utils.prepare_discriminator_input"><code class="xref py py-obj docutils literal notranslate"><span class="pre">prepare_discriminator_input</span></code></a>(img, lf, hf)</p></td>
+<td><p>Concatenate an image batch with its low- and high-frequency components.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#src.utils.weights_init_normal" title="src.utils.weights_init_normal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">weights_init_normal</span></code></a>(m)</p></td>
+<td><p>Initialize model weights following a normal distribution scheme.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Classes</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#src.utils.DehazingDataset" title="src.utils.DehazingDataset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DehazingDataset</span></code></a>(*args, **kwargs)</p></td>
+<td><p>A paired-image dataset for single-image dehazing tasks.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="src.utils.DehazingDataset">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.utils.</span></span><span class="sig-name descname"><span class="pre">DehazingDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/src/utils.html#DehazingDataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.utils.DehazingDataset" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></p>
+<p>A paired-image dataset for single-image dehazing tasks.</p>
+<p>This dataset assumes a directory structure:</p>
+<p><code class="docutils literal notranslate"><span class="pre">root_dir/clear</span></code> — clean (ground-truth) images
+<code class="docutils literal notranslate"><span class="pre">root_dir/hazy</span></code> — corresponding hazy/degraded images</p>
+<p>Both subdirectories must contain images with matching filenames.
+The dataset returns pairs <code class="docutils literal notranslate"><span class="pre">(hazy,</span> <span class="pre">clear)</span></code> suitable for supervised
+training of dehazing models.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>root_dir</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> or <code class="xref py py-class docutils literal notranslate"><span class="pre">Path-like</span></code>) – Path to the dataset root directory containing <code class="docutils literal notranslate"><span class="pre">clear/</span></code> and <code class="docutils literal notranslate"><span class="pre">hazy/</span></code>.</p></li>
+<li><p><strong>transform</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">callable</span></code>, <em>optional</em>) – A function or transform applied to both images. It must accept and
+return a PIL image or a tensor. When provided, the same transform is
+applied to both hazy and clear images.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Variables<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>root_dir</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – Path to the dataset root.</p></li>
+<li><p><strong>clear_dir</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – Directory containing the clean images.</p></li>
+<li><p><strong>hazy_dir</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – Directory containing the hazy images.</p></li>
+<li><p><strong>images</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code> of <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – Filenames present in <code class="docutils literal notranslate"><span class="pre">clear_dir</span></code> (matching files are expected in
+<code class="docutils literal notranslate"><span class="pre">hazy_dir</span></code>).</p></li>
+<li><p><strong>transform</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">callable</span></code> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>) – Transform applied to both images in a sample.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.utils.get_lf_hf">
+<span class="sig-prename descclassname"><span class="pre">src.utils.</span></span><span class="sig-name descname"><span class="pre">get_lf_hf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">images</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/src/utils.html#get_lf_hf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.utils.get_lf_hf" title="Link to this definition"></a></dt>
+<dd><p>Compute the low- and high-frequency components of a batch of images.</p>
+<p>This function extracts two complementary frequency representations from an
+input batch of images. The low-frequency (LF) component is obtained using a
+Gaussian blur, which removes fine details while preserving coarse structure.
+The high-frequency (HF) component is computed by applying a Laplacian filter
+to the grayscale version of the input and then replicating the result across
+the RGB channels. Because the Laplacian may produce high-magnitude values,
+the HF output is normalized to the range <code class="docutils literal notranslate"><span class="pre">[-1,</span> <span class="pre">1]</span></code> using a hyperbolic
+tangent to ensure numerical stability during training.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>images</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code>) – Input batch of images with shape <code class="docutils literal notranslate"><span class="pre">(B,</span> <span class="pre">C,</span> <span class="pre">H,</span> <span class="pre">W)</span></code> and RGB channels.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p>A pair <code class="docutils literal notranslate"><span class="pre">(lf,</span> <span class="pre">hf)</span></code> where:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">lf</span></code> is the low-frequency component obtained via Gaussian blur.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">hf</span></code> is the high-frequency component derived from the Laplacian and
+normalized to <code class="docutils literal notranslate"><span class="pre">[-1,</span> <span class="pre">1]</span></code>.</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple[torch.Tensor</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor]</span></code></p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>The HF component is expanded to three channels so that both LF and HF can
+be concatenated with the original RGB image if needed (e.g., for
+discriminators in GAN architectures).</p></li>
+<li><p>Normalization with <code class="docutils literal notranslate"><span class="pre">tanh</span></code> prevents unstable gradients that may arise
+from the Laplacian operator.</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.utils.prepare_discriminator_input">
+<span class="sig-prename descclassname"><span class="pre">src.utils.</span></span><span class="sig-name descname"><span class="pre">prepare_discriminator_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">torch.Tensor</span></span></span><a class="reference internal" href="../_modules/src/utils.html#prepare_discriminator_input"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.utils.prepare_discriminator_input" title="Link to this definition"></a></dt>
+<dd><p>Concatenate an image batch with its low- and high-frequency components.</p>
+<p>This function prepares the input for a discriminator by concatenating, along
+the channel dimension, the original RGB images together with their
+corresponding low-frequency (LF) and high-frequency (HF) representations.
+The resulting tensor has nine channels: three from the original image,
+three from the LF component, and three from the HF component.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>img</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code>) – Batch of RGB images with shape <code class="docutils literal notranslate"><span class="pre">(B,</span> <span class="pre">3,</span> <span class="pre">H,</span> <span class="pre">W)</span></code>.</p></li>
+<li><p><strong>lf</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code>) – Batch of low-frequency components with shape <code class="docutils literal notranslate"><span class="pre">(B,</span> <span class="pre">3,</span> <span class="pre">H,</span> <span class="pre">W)</span></code>.</p></li>
+<li><p><strong>hf</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code>) – Batch of high-frequency components with shape <code class="docutils literal notranslate"><span class="pre">(B,</span> <span class="pre">3,</span> <span class="pre">H,</span> <span class="pre">W)</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Concatenated tensor of shape <code class="docutils literal notranslate"><span class="pre">(B,</span> <span class="pre">9,</span> <span class="pre">H,</span> <span class="pre">W)</span></code> corresponding to
+<code class="docutils literal notranslate"><span class="pre">[img</span> <span class="pre">or</span> <span class="pre">lf</span> <span class="pre">or</span> <span class="pre">hf]</span></code> along the channel dimension.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.utils.weights_init_normal">
+<span class="sig-prename descclassname"><span class="pre">src.utils.</span></span><span class="sig-name descname"><span class="pre">weights_init_normal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.nn.Module</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/src/utils.html#weights_init_normal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#src.utils.weights_init_normal" title="Link to this definition"></a></dt>
+<dd><p>Initialize model weights following a normal distribution scheme.</p>
+<p>This function is intended to be passed to <code class="docutils literal notranslate"><span class="pre">nn.Module.apply</span></code> to initialize
+convolutional and batch-normalization layers commonly used in GANs.
+Convolutional layers are initialized with a normal distribution centered at
+0, while batch-normalization layers are initialized with weights centered at
+1 and biases at 0.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>m</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">nn.Module</span></code>) – A PyTorch module. If <code class="docutils literal notranslate"><span class="pre">m</span></code> is an instance of <code class="docutils literal notranslate"><span class="pre">Conv2d</span></code> or
+<code class="docutils literal notranslate"><span class="pre">ConvTranspose2d</span></code>, its weights are initialized using
+<code class="docutils literal notranslate"><span class="pre">N(0,</span> <span class="pre">0.02)</span></code>. If <code class="docutils literal notranslate"><span class="pre">m</span></code> is a <code class="docutils literal notranslate"><span class="pre">BatchNorm2d</span></code> or <code class="docutils literal notranslate"><span class="pre">BatchNorm1d</span></code> layer,
+its weights are initialized using <code class="docutils literal notranslate"><span class="pre">N(1,</span> <span class="pre">0.02)</span></code> and its biases are set
+to zero.</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>This initialization scheme follows standard practices in GAN training
+(e.g., DCGAN), improving stability during early optimization.</p></li>
+<li><p>Use as: <code class="docutils literal notranslate"><span class="pre">model.apply(weights_init_normal)</span></code>.</p></li>
+</ul>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="src.training.html" class="btn btn-neutral float-left" title="src.training" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Ramsses De Los Santos Mendoza.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

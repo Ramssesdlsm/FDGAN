@@ -1,0 +1,12 @@
+src.mlp
+=======
+
+.. automodule:: src.mlp
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      MLP
+   

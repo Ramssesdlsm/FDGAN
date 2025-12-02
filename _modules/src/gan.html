@@ -1,0 +1,585 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>src.gan &mdash; FDGAN 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=2709fde1"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            FDGAN
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">FDGAN</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">src.gan</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for src.gan</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nn</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn.functional</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">F</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torchvision.models</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">models</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Any</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.conv</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConfigurableCNN</span><span class="p">,</span> <span class="n">ConvBlock</span><span class="p">,</span> <span class="n">ConvTransposeBlock</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_validate_img_shape</span><span class="p">(</span><span class="n">img_shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">img_shape</span><span class="p">,</span> <span class="p">(</span><span class="nb">tuple</span><span class="p">,</span> <span class="nb">list</span><span class="p">))</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">img_shape</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;img_shape must be a tuple/list of 3 ints (C, H, W), got: </span><span class="si">{</span><span class="n">img_shape</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">and</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">img_shape</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;img_shape elements must be positive integers, got: </span><span class="si">{</span><span class="n">img_shape</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_validate_conv_config</span><span class="p">(</span><span class="n">conv_layers_config</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">conv_layers_config</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">conv_layers_config</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;conv_layers_config must be a non-empty list of layer configuration dicts.&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Discriminator">
+<a class="viewcode-back" href="../../_autosummary/src.gan.html#src.gan.Discriminator">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Discriminator</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Discriminator network for GANs using a configurable CNN architecture.</span>
+
+<span class="sd">    This module implements a discriminator network that processes input images</span>
+<span class="sd">    through a series of convolutional layers defined by a configuration list.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    cnn : ConfigurableCNN</span>
+<span class="sd">        The configurable CNN used for feature extraction and classification.            </span>
+
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+<span class="sd">    &gt;&gt;&gt; img_shape = (3, 64, 64)  # Example image shape</span>
+<span class="sd">    &gt;&gt;&gt; conv_layers_config = [</span>
+<span class="sd">    ...     {&#39;out_channels&#39;: 64, &#39;kernel_size&#39;: 4, &#39;stride&#39;: 2, &#39;padding&#39;: 1, &#39;activation&#39;: &#39;leakyrelu&#39;},</span>
+<span class="sd">    ...     {&#39;out_channels&#39;: 128, &#39;kernel_size&#39;: 4, &#39;stride&#39;: 2, &#39;padding&#39;: 1, &#39;activation&#39;: &#39;leakyrelu&#39;},</span>
+<span class="sd">    ...     {&#39;out_channels&#39;: 256, &#39;kernel_size&#39;: 4, &#39;stride&#39;: 2, &#39;padding&#39;: 1, &#39;activation&#39;: &#39;leakyrelu&#39;},</span>
+<span class="sd">    ...     {&#39;out_channels&#39;: 1, &#39;kernel_size&#39;: 4, &#39;stride&#39;: 1, &#39;padding&#39;: 0, &#39;activation&#39;: &#39;linear&#39;},</span>
+<span class="sd">    ... ]</span>
+<span class="sd">    &gt;&gt;&gt; discriminator = Discriminator(img_shape, conv_layers_config)</span>
+<span class="sd">    &gt;&gt;&gt; x = torch.randn(4, 3, 64, 64)  # Batch of 4 images</span>
+<span class="sd">    &gt;&gt;&gt; output = discriminator(x)</span>
+<span class="sd">    &gt;&gt;&gt; print(output.shape)</span>
+<span class="sd">    torch.Size([4, 1, 1, 1])</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    - The input images must match the specified `img_shape`.</span>
+<span class="sd">    - The final output shape depends on the convolutional layers configuration.</span>
+<span class="sd">    &quot;&quot;&quot;</span>    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img_shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">conv_layers_config</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">]):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the Discriminator network.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        img_shape : Tuple[int, int, int]</span>
+<span class="sd">            The shape of the input images as (channels, height, width).</span>
+<span class="sd">        conv_layers_config : List[dict]</span>
+<span class="sd">            A list of dictionaries specifying the configuration of each convolutional layer.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        RuntimeError</span>
+<span class="sd">            If the ConfigurableCNN construction fails.</span>
+<span class="sd">        &quot;&quot;&quot;</span>        
+        <span class="nb">super</span><span class="p">(</span><span class="n">Discriminator</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="n">_validate_img_shape</span><span class="p">(</span><span class="n">img_shape</span><span class="p">)</span>
+        <span class="n">_validate_conv_config</span><span class="p">(</span><span class="n">conv_layers_config</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">img_shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">img_shape</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cnn</span> <span class="o">=</span> <span class="n">ConfigurableCNN</span><span class="p">(</span><span class="n">layers_config</span><span class="o">=</span><span class="n">conv_layers_config</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to construct ConfigurableCNN for discriminator: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+
+<div class="viewcode-block" id="Discriminator.forward">
+<a class="viewcode-back" href="../../_autosummary/src.gan.html#src.gan.Discriminator.forward">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward pass through the Discriminator.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        img : torch.Tensor</span>
+<span class="sd">            Input tensor representing a batch of images with shape (batch_size, channels, height, width).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        torch.Tensor</span>
+<span class="sd">            Output tensor after passing through the discriminator network.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        TypeError</span>
+<span class="sd">            If the input is not a torch.Tensor.</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If the input tensor does not have 4 dimensions.</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If the input tensor&#39;s shape does not match the expected image shape.</span>
+<span class="sd">        &quot;&quot;&quot;</span>        
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">torch</span><span class="o">.</span><span class="n">is_tensor</span><span class="p">(</span><span class="n">img</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Expected img to be a torch.Tensor, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">img</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">img</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">!=</span> <span class="mi">4</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Expected img tensor to have 4 dims (B, C, H, W), got shape </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Basic shape compatibility check (C, H, W)</span>
+        <span class="k">if</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">img_shape</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Input images must have shape (B, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">img_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">img_shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">img_shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="si">}</span><span class="s2">), &quot;</span>
+                             <span class="sa">f</span><span class="s2">&quot;but got </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cnn</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">out</span></div>
+</div>
+
+    
+<div class="viewcode-block" id="DenseNetEncoder">
+<a class="viewcode-back" href="../../_autosummary/src.gan.html#src.gan.DenseNetEncoder">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">DenseNetEncoder</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Encoder based on the DenseNet121 architecture for feature extraction.</span>
+
+<span class="sd">    This class encapsulates a DenseNet121 network (optionally pre-trained) and splits</span>
+<span class="sd">    its layers into sequential blocks to facilitate access to feature maps at </span>
+<span class="sd">    different spatial resolutions.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    features : nn.Sequential</span>
+<span class="sd">        Original feature layers from DenseNet121.</span>
+<span class="sd">    block1 : nn.Sequential</span>
+<span class="sd">        First dense block and transition layer, reducing spatial resolution.</span>
+<span class="sd">    block2 : nn.Sequential</span>
+<span class="sd">        Second dense block and transition layer.</span>
+<span class="sd">    block3 : nn.Sequential</span>
+<span class="sd">        Third dense block and transition layer.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes the DenseNet121 encoder and extracts its feature blocks.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        pretrained : bool, optional</span>
+<span class="sd">            If True, loads ImageNet pre-trained weights. Default is True.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">DenseNetEncoder</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="n">densenet</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">densenet121</span><span class="p">(</span>
+            <span class="n">weights</span><span class="o">=</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">DenseNet121_Weights</span><span class="o">.</span><span class="n">DEFAULT</span> <span class="k">if</span> <span class="n">pretrained</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">features</span> <span class="o">=</span> <span class="n">densenet</span><span class="o">.</span><span class="n">features</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">block1</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="o">.</span><span class="n">denseblock1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="o">.</span><span class="n">transition1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">block2</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="o">.</span><span class="n">denseblock2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="o">.</span><span class="n">transition2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">block3</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="o">.</span><span class="n">denseblock3</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="o">.</span><span class="n">transition3</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SideBranch">
+<a class="viewcode-back" href="../../_autosummary/src.gan.html#src.gan.SideBranch">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SideBranch</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Lateral branch for multi-scale feature fusion.</span>
+
+<span class="sd">    Performs downsampling through Average Pooling followed by a 1x1 projection</span>
+<span class="sd">    convolution to adjust the channel dimension. This is used to inject</span>
+<span class="sd">    high-resolution information into deeper stages of the network.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    proj : ConvBlock</span>
+<span class="sd">        Convolutional block that performs the linear projection </span>
+<span class="sd">        (without Batch Normalization).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes the lateral branch used for multi-scale feature fusion.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        in_channels : int</span>
+<span class="sd">            Number of channels of the input feature map.</span>
+<span class="sd">        out_channels : int</span>
+<span class="sd">            Number of output channels after the 1x1 projection.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SideBranch</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">proj</span> <span class="o">=</span> <span class="n">ConvBlock</span><span class="p">(</span>
+            <span class="n">in_channels</span><span class="p">,</span>
+            <span class="n">out_channels</span><span class="p">,</span>
+            <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">activation</span><span class="o">=</span><span class="s2">&quot;linear&quot;</span><span class="p">,</span>
+            <span class="n">use_batch_norm</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="SideBranch.forward">
+<a class="viewcode-back" href="../../_autosummary/src.gan.html#src.gan.SideBranch.forward">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward pass through the SideBranch network.</span>
+
+<span class="sd">        The input tensor is first downsampled by a factor of 2 using average</span>
+<span class="sd">        pooling and then passed through a projection layer.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : torch.Tensor</span>
+<span class="sd">            Input feature map tensor of shape (B, C, H, W).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        torch.Tensor</span>
+<span class="sd">            Projected feature map tensor after downsampling and 1x1 convolution.</span>
+<span class="sd">        &quot;&quot;&quot;</span>        
+        <span class="n">x_ds</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">avg_pool2d</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">proj</span><span class="p">(</span><span class="n">x_ds</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="DecoderBlock">
+<a class="viewcode-back" href="../../_autosummary/src.gan.html#src.gan.DecoderBlock">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">DecoderBlock</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Decoder block implementing a dense structure with optional upsampling.</span>
+
+<span class="sd">    This block enriches feature maps through a local dense connection, concatenates</span>
+<span class="sd">    the input with newly generated features, reduces dimensionality, and optionally</span>
+<span class="sd">    upsamples the spatial resolution.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dense : nn.Sequential</span>
+<span class="sd">        Dense sub-block (Conv 1x1 -&gt; Conv 3x3).</span>
+<span class="sd">    up_trans : ConvTransposeBlock</span>
+<span class="sd">        Transition block that reduces channels via a 1x1 projection.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">grow_channels</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">upsample</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes the decoder block composed of a dense sub-block, </span>
+<span class="sd">        a transition projection block, and an optional upsampling step.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        in_channels : int</span>
+<span class="sd">            Number of input channels.</span>
+<span class="sd">        grow_channels : int</span>
+<span class="sd">            Growth rate defining how many new channels the dense sub-block generates.</span>
+<span class="sd">        out_channels : int</span>
+<span class="sd">            Number of output channels after the projection block.</span>
+<span class="sd">        upsample : bool, optional</span>
+<span class="sd">            If True, upsamples the output feature map by a factor of 2 </span>
+<span class="sd">            using nearest-neighbor interpolation. Default is True.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">DecoderBlock</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">upsample</span> <span class="o">=</span> <span class="n">upsample</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">dense</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_dense</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">grow_channels</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">up_trans</span> <span class="o">=</span> <span class="n">ConvTransposeBlock</span><span class="p">(</span>
+            <span class="n">in_channels</span><span class="o">=</span><span class="n">in_channels</span> <span class="o">+</span> <span class="n">grow_channels</span><span class="p">,</span>
+            <span class="n">out_channels</span><span class="o">=</span><span class="n">out_channels</span><span class="p">,</span>
+            <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>  
+            <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>       
+            <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>      
+            <span class="n">activation</span><span class="o">=</span><span class="s2">&quot;relu&quot;</span><span class="p">,</span>
+            <span class="n">use_batch_norm</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_make_dense</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_c</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">grow_c</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Builds the dense sub-block formed by a 1x1 bottleneck convolution followed by a 3x3 convolution.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        in_c : int</span>
+<span class="sd">            Number of input channels.</span>
+<span class="sd">        grow_c : int</span>
+<span class="sd">            Growth rate controlling the number of channels in the 3x3 convolution.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        nn.Sequential</span>
+<span class="sd">            Dense convolutional block producing `grow_c` new feature channels.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">ConvBlock</span><span class="p">(</span>
+                <span class="n">in_c</span><span class="p">,</span>
+                <span class="n">grow_c</span> <span class="o">*</span> <span class="mi">4</span><span class="p">,</span>
+                <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                <span class="n">activation</span><span class="o">=</span><span class="s2">&quot;relu&quot;</span><span class="p">,</span>
+                <span class="n">use_batch_norm</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="n">ConvBlock</span><span class="p">(</span>
+                <span class="n">grow_c</span> <span class="o">*</span> <span class="mi">4</span><span class="p">,</span>
+                <span class="n">grow_c</span><span class="p">,</span>
+                <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">activation</span><span class="o">=</span><span class="s2">&quot;relu&quot;</span><span class="p">,</span>
+                <span class="n">use_batch_norm</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="DecoderBlock.forward">
+<a class="viewcode-back" href="../../_autosummary/src.gan.html#src.gan.DecoderBlock.forward">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward pass through the DecoderBlock.</span>
+
+<span class="sd">        This method processes the input tensor by first applying a dense layer,</span>
+<span class="sd">        concatenating its output with the original input tensor, and then</span>
+<span class="sd">        upsampling the result using a transposed convolution. An optional</span>
+<span class="sd">        additional upsampling step via nearest-neighbor interpolation can be</span>
+<span class="sd">        applied. The input feature map tensor, expected to have a shape of</span>
+<span class="sd">        (B, C, H, W), where B is the batch size, C is the number of</span>
+<span class="sd">        channels, and H, W are the height and width.</span>
+<span class="sd">        The output upsampled feature map tensor. The spatial dimensions (H, W)</span>
+<span class="sd">        are increased, and the number of channels is modified by the layers</span>
+<span class="sd">        within the block.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : torch.Tensor</span>
+<span class="sd">            Input feature map tensor of shape (B, C, H, W).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        torch.Tensor</span>
+<span class="sd">            Output upsampled feature map tensor with increased spatial dimensions (H, W).</span>
+<span class="sd">        &quot;&quot;&quot;</span>        
+        <span class="n">dense_feat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dense</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="n">x_dense</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">x</span><span class="p">,</span> <span class="n">dense_feat</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">up_trans</span><span class="p">(</span><span class="n">x_dense</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">upsample</span><span class="p">:</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;nearest&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="FDGANGenerator">
+<a class="viewcode-back" href="../../_autosummary/src.gan.html#src.gan.FDGANGenerator">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">FDGANGenerator</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generator module for the FD-GAN (Fusion-Discriminator GAN) architecture.</span>
+
+<span class="sd">    Implements a densely connected U-Net-like structure with lateral side branches</span>
+<span class="sd">    for multi-scale feature fusion. Designed for image-to-image translation tasks,</span>
+<span class="sd">    such as haze removal (dehazing).</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    encoder : DenseNetEncoder</span>
+<span class="sd">        Pre-trained backbone used for feature extraction.</span>
+<span class="sd">    conv_in : ConvBlock</span>
+<span class="sd">        Initial input convolution preserving spatial resolution.</span>
+<span class="sd">    side_branch1, side_branch2 : SideBranch</span>
+<span class="sd">        Lateral branches for processing and fusing low-level features.</span>
+<span class="sd">    fusion_x1, fusion_bottleneck : ConvBlock</span>
+<span class="sd">        Fusion blocks combining side-branch features with the main encoder stream.</span>
+<span class="sd">    block4, block5, block6 : DecoderBlock</span>
+<span class="sd">        Decoder stages for progressively recovering spatial resolution.</span>
+<span class="sd">    final_head : nn.Sequential</span>
+<span class="sd">        Final projection layers mapping features to the RGB image space.</span>
+
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+<span class="sd">    &gt;&gt;&gt; generator = FDGANGenerator(output_same_size=True)</span>
+<span class="sd">    &gt;&gt;&gt; x = torch.randn(4, 3, 256, 256)  # Batch of 4 images</span>
+<span class="sd">    &gt;&gt;&gt; output = generator(x)</span>
+<span class="sd">    &gt;&gt;&gt; print(output.shape)</span>
+<span class="sd">    torch.Size([4, 3, 256, 256])</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    Dong, Y., Liu, Y., Zhang, H., Chen, S., &amp; Qiao, Y. (2020).</span>
+<span class="sd">        *FD-GAN: Generative adversarial networks with fusion-discriminator for</span>
+<span class="sd">        single image dehazing*. AAAI Conference on Artificial Intelligence,</span>
+<span class="sd">        34(07), 10729-10736.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_same_size</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes the FD-GAN generator composed of a DenseNet-based encoder,</span>
+<span class="sd">        lateral side branches, multi-scale fusion modules, decoder stages, </span>
+<span class="sd">        and a final reconstruction head.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        output_same_size : bool, optional</span>
+<span class="sd">            Reserved flag indicating whether the output should match the input</span>
+<span class="sd">            spatial resolution. The current implementation always preserves size.</span>
+<span class="sd">            Default is True.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">FDGANGenerator</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_same_size</span> <span class="o">=</span> <span class="n">output_same_size</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span> <span class="o">=</span> <span class="n">DenseNetEncoder</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">conv_in</span> <span class="o">=</span> <span class="n">ConvBlock</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s2">&quot;relu&quot;</span><span class="p">,</span> <span class="n">use_batch_norm</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">side_branch1</span> <span class="o">=</span> <span class="n">SideBranch</span><span class="p">(</span><span class="n">in_channels</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">out_channels</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">side_branch2</span> <span class="o">=</span> <span class="n">SideBranch</span><span class="p">(</span><span class="n">in_channels</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span> <span class="n">out_channels</span><span class="o">=</span><span class="mi">128</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">fusion_x1</span> <span class="o">=</span> <span class="n">ConvBlock</span><span class="p">(</span>
+            <span class="mi">32</span> <span class="o">+</span> <span class="mi">128</span><span class="p">,</span>
+            <span class="mi">128</span><span class="p">,</span>
+            <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+            <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">activation</span><span class="o">=</span><span class="s2">&quot;linear&quot;</span><span class="p">,</span>
+            <span class="n">use_batch_norm</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fusion_bottleneck</span> <span class="o">=</span> <span class="n">ConvBlock</span><span class="p">(</span>
+            <span class="mi">512</span> <span class="o">+</span> <span class="mi">128</span><span class="p">,</span>
+            <span class="mi">512</span><span class="p">,</span>
+            <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+            <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">activation</span><span class="o">=</span><span class="s2">&quot;linear&quot;</span><span class="p">,</span>
+            <span class="n">use_batch_norm</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">block4</span> <span class="o">=</span> <span class="n">DecoderBlock</span><span class="p">(</span><span class="n">in_channels</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span> <span class="n">grow_channels</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span> <span class="n">out_channels</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span> <span class="n">upsample</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">block5</span> <span class="o">=</span> <span class="n">DecoderBlock</span><span class="p">(</span><span class="n">in_channels</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span> <span class="n">grow_channels</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">out_channels</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">upsample</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">block6</span> <span class="o">=</span> <span class="n">DecoderBlock</span><span class="p">(</span><span class="n">in_channels</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span> <span class="n">grow_channels</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">out_channels</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">upsample</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">final_head</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">ConvBlock</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s2">&quot;leakyrelu&quot;</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">32</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Tanh</span><span class="p">(),</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="FDGANGenerator.forward">
+<a class="viewcode-back" href="../../_autosummary/src.gan.html#src.gan.FDGANGenerator.forward">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Forward pass through the FD-GAN Generator.</span>
+<span class="sd">        </span>
+<span class="sd">        This method implements the U-Net like architecture of the FD-GAN generator,</span>
+<span class="sd">        which includes an encoder, a decoder, and specialized side-branch and</span>
+<span class="sd">        fusion modules to combine features from different scales.</span>
+<span class="sd">        </span>
+<span class="sd">        The process is as follows:</span>
+
+<span class="sd">        1. The input image is passed through an initial convolution.</span>
+<span class="sd">        2. The result is processed by three encoder blocks to extract features.</span>
+<span class="sd">        3. Side branches process features from early encoder stages (`x0`, `x2`).</span>
+<span class="sd">        4. Fusion modules combine these side-branch features with deeper features</span>
+<span class="sd">            to create inputs for the decoder and a fused skip connection.</span>
+<span class="sd">        5. The decoder, consisting of three blocks, reconstructs the image, using</span>
+<span class="sd">            skip connections from the encoder and the fused feature maps.</span>
+<span class="sd">        6. A final head layer produces the output image.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        img : torch.Tensor</span>
+<span class="sd">            Input normalized image in the range [-1, 1].</span>
+<span class="sd">            Expected shape: (B, 3, H, W), where H and W are multiples of 32.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        torch.Tensor</span>
+<span class="sd">            Generated image in the range [-1, 1] with the same spatial resolution</span>
+<span class="sd">            as the input.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">original_size</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span>  <span class="c1"># (H, W)</span>
+        
+        <span class="n">x0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv_in</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+        <span class="n">x1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">block1</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span>
+        <span class="n">x2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">block2</span><span class="p">(</span><span class="n">x1</span><span class="p">)</span>
+        <span class="n">x3</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">block3</span><span class="p">(</span><span class="n">x2</span><span class="p">)</span>
+
+        <span class="n">f_x0_side</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">side_branch1</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span>
+        <span class="n">x1_fused</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fusion_x1</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">f_x0_side</span><span class="p">,</span> <span class="n">x1</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+
+        <span class="n">f_x2_side</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">side_branch2</span><span class="p">(</span><span class="n">x2</span><span class="p">)</span>
+        <span class="n">bottleneck_in</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fusion_bottleneck</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">x3</span><span class="p">,</span> <span class="n">f_x2_side</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+
+        <span class="n">d4</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">block4</span><span class="p">(</span><span class="n">bottleneck_in</span><span class="p">)</span>
+        <span class="n">d4_skip</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">d4</span><span class="p">,</span> <span class="n">x2</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">d5</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">block5</span><span class="p">(</span><span class="n">d4_skip</span><span class="p">)</span>
+
+        <span class="n">d5_skip</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">d5</span><span class="p">,</span> <span class="n">x1_fused</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">d6</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">block6</span><span class="p">(</span><span class="n">d5_skip</span><span class="p">)</span>
+
+        <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">final_head</span><span class="p">(</span><span class="n">d6</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">output</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Ramsses De Los Santos Mendoza.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

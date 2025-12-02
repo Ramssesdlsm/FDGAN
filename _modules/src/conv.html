@@ -1,0 +1,384 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>src.conv &mdash; FDGAN 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=2709fde1"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            FDGAN
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">FDGAN</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">src.conv</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for src.conv</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nn</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">ACTIVATION_MAP</span><span class="p">,</span> <span class="n">POOLING_MAP</span>
+
+<div class="viewcode-block" id="ConvBlock">
+<a class="viewcode-back" href="../../_autosummary/src.conv.html#src.conv.ConvBlock">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ConvBlock</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A modular convolutional block for PyTorch models.</span>
+
+<span class="sd">    A configurable 2D convolutional block that composes a Conv2d layer with optional BatchNorm,</span>
+<span class="sd">    a selectable activation, and an optional pooling layer. The block is assembled into an</span>
+<span class="sd">    nn.Sequential and applied as-is in forward.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    in_channels : int</span>
+<span class="sd">        Number of channels in the input image/tensor.</span>
+<span class="sd">    out_channels : int</span>
+<span class="sd">        Number of channels produced by the convolution.</span>
+<span class="sd">    kernel_size : int</span>
+<span class="sd">        Size of the convolving kernel (assumed square).</span>
+<span class="sd">    stride : int, optional (default=1)</span>
+<span class="sd">        Stride of the convolution.</span>
+<span class="sd">    padding : Union[int, str, bool], optional (default=False)</span>
+<span class="sd">        Padding applied to the input before convolution. Behaviors:</span>
+
+<span class="sd">        - If the string ``same`` (case-insensitive) is provided, padding is set to ``kernel_size // 2``</span>
+<span class="sd">            (to approximately preserve spatial dimensions for odd kernel sizes).</span>
+<span class="sd">        - If a positive integer is provided, that value is used as padding.</span>
+<span class="sd">        - Any other value (including ``False`` or ``0``) results in zero padding.</span>
+
+<span class="sd">    activation : str, optional (default=``&#39;relu&#39;``)</span>
+<span class="sd">        Name of the activation to apply after convolution (looked up via ``ACTIVATION_MAP``).</span>
+<span class="sd">    activation_kwargs : Optional[Dict[str, Any]], optional (default=None)</span>
+<span class="sd">        Optional keyword arguments to instantiate the activation class. If None, the activation is created with its default constructor.</span>
+<span class="sd">    use_batch_norm : bool, optional (default=True)</span>
+<span class="sd">        If True, a nn.BatchNorm2d(out_channels) layer is inserted after the convolution.</span>
+<span class="sd">        When batch normalization is used, the convolution is created with bias=False.</span>
+<span class="sd">    pooling_type : Optional[str], optional</span>
+<span class="sd">        Name of the pooling operation to apply (looked up via ``POOLING_MAP``), e.g. ``max``, ``avg``.</span>
+<span class="sd">        If None, no pooling layer is appended.</span>
+<span class="sd">    pooling_kernel : Optional[int], optional</span>
+<span class="sd">        Kernel size for the pooling layer. If not provided, pooling is not added.</span>
+<span class="sd">    pooling_stride : Optional[int], optional</span>
+<span class="sd">        Stride for the pooling layer. If None, defaults to pooling_kernel.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    block : nn.Sequential</span>
+<span class="sd">        The assembled sequential block containing the convolution, optional batch norm,</span>
+<span class="sd">        activation, and optional pooling.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If pooling_type is provided but not found in POOLING_MAP.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    - The convolution&#39;s bias is disabled when batch normalization is enabled to avoid redundant</span>
+<span class="sd">      affine parameters.</span>
+<span class="sd">    - Activation and pooling implementations are looked up using ACTIVATION_MAP and POOLING_MAP,</span>
+<span class="sd">      respectively; those mappings must be defined in the module scope and map lowercase names</span>
+<span class="sd">      to callable nn.Module classes (not instances).</span>
+<span class="sd">    - The forward pass simply delegates to self.block(x) and returns the transformed tensor.</span>
+
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+<span class="sd">    &gt;&gt;&gt; # Construct a conv block with same-padding, batch norm and max pooling</span>
+<span class="sd">    &gt;&gt;&gt; ConvBlock(3, 64, kernel_size=3, padding=&quot;same&quot;, activation=&quot;relu&quot;,</span>
+<span class="sd">    ...           use_batch_norm=True, pooling_type=&quot;max&quot;, pooling_kernel=2)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">in_channels</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">out_channels</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">kernel_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">stride</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">padding</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">activation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;relu&quot;</span><span class="p">,</span>
+        <span class="n">activation_kwargs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">use_batch_norm</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">pooling_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">pooling_kernel</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">pooling_stride</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ConvBlock</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="n">padding_value</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">padding</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">padding</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;same&quot;</span><span class="p">:</span>
+            <span class="n">padding_value</span> <span class="o">=</span> <span class="n">kernel_size</span> <span class="o">//</span> <span class="mi">2</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">padding</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">and</span> <span class="n">padding</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">padding_value</span> <span class="o">=</span> <span class="n">padding</span>
+
+        <span class="n">layers</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">conv_layer</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span>
+            <span class="n">in_channels</span><span class="p">,</span>
+            <span class="n">out_channels</span><span class="p">,</span>
+            <span class="n">kernel_size</span><span class="p">,</span>
+            <span class="n">stride</span><span class="p">,</span>
+            <span class="n">padding</span><span class="o">=</span><span class="n">padding_value</span><span class="p">,</span>
+            <span class="n">bias</span><span class="o">=</span><span class="ow">not</span> <span class="n">use_batch_norm</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">conv_layer</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">use_batch_norm</span><span class="p">:</span>
+            <span class="n">layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">out_channels</span><span class="p">))</span>
+
+        <span class="n">activation_class</span> <span class="o">=</span> <span class="n">ACTIVATION_MAP</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">activation</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span> <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">)</span>
+        <span class="n">layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">activation_class</span><span class="p">(</span><span class="o">**</span><span class="p">(</span><span class="n">activation_kwargs</span> <span class="ow">or</span> <span class="p">{})))</span>
+
+        <span class="k">if</span> <span class="n">pooling_type</span> <span class="ow">and</span> <span class="n">pooling_kernel</span><span class="p">:</span>
+            <span class="n">pooling_class</span> <span class="o">=</span> <span class="n">POOLING_MAP</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pooling_type</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">pooling_class</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Pooling type &#39;</span><span class="si">{</span><span class="n">pooling_type</span><span class="si">}</span><span class="s2">&#39; is not supported.&quot;</span><span class="p">)</span>
+            <span class="n">pool_stride</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">pooling_stride</span> <span class="k">if</span> <span class="n">pooling_stride</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">pooling_kernel</span>
+            <span class="p">)</span>
+            <span class="n">layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pooling_class</span><span class="p">(</span><span class="n">kernel_size</span><span class="o">=</span><span class="n">pooling_kernel</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="n">pool_stride</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">block</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="n">layers</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">block</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="ConvTransposeBlock">
+<a class="viewcode-back" href="../../_autosummary/src.conv.html#src.conv.ConvTransposeBlock">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ConvTransposeBlock</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A modular transposed-convolution block for PyTorch models.</span>
+
+<span class="sd">    A modular transposed-convolution block for PyTorch models that performs a ConvTranspose2d</span>
+<span class="sd">    followed optionally by BatchNorm2d and a configurable activation.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    in_channels : int</span>
+<span class="sd">        Number of channels in the input feature map.</span>
+<span class="sd">    out_channels : int</span>
+<span class="sd">        Number of channels produced by the transposed convolution.</span>
+<span class="sd">    kernel_size : int</span>
+<span class="sd">        Size of the convolution kernel.</span>
+<span class="sd">    stride : int, optional</span>
+<span class="sd">        Stride of the transposed convolution. Default is 2.</span>
+<span class="sd">    padding : int, optional</span>
+<span class="sd">        Padding added to both sides of the input. Default is 1.</span>
+<span class="sd">    output_padding : int, optional</span>
+<span class="sd">        Additional size added to one side of the output shape. Default is 0.</span>
+<span class="sd">    activation : str, optional</span>
+<span class="sd">        Name of the activation to apply after convolution (looked up via ACTIVATION_MAP).</span>
+<span class="sd">        Defaults to &quot;relu&quot;. The activation class is instantiated with its default constructor.</span>
+<span class="sd">    activation_kwargs : Optional[Dict[str, Any]], optional (default=None)</span>
+<span class="sd">        Optional keyword arguments to instantiate the activation class. If None, the activation is created with its default constructor.</span>
+<span class="sd">    use_batch_norm : bool, optional</span>
+<span class="sd">        If True, insert nn.BatchNorm2d after the transposed convolution. Default is True.</span>
+
+<span class="sd">    Behavior</span>
+<span class="sd">    --------</span>
+<span class="sd">    - Constructs an nn.Sequential block containing:</span>
+<span class="sd">        1. nn.ConvTranspose2d(..., bias=not use_batch_norm)</span>
+<span class="sd">        2. nn.BatchNorm2d(out_channels) if use_batch_norm is True</span>
+<span class="sd">        3. The activation layer resolved from ACTIVATION_MAP</span>
+<span class="sd">    - The ConvTranspose2d layer&#39;s bias is disabled when batch normalization is used</span>
+<span class="sd">      (bias=False) to avoid redundant affine parameters.</span>
+
+<span class="sd">    Input / Output shapes</span>
+<span class="sd">    ---------------------</span>
+<span class="sd">    Input:  Tensor of shape (N, in_channels, H, W)</span>
+<span class="sd">    Output: Tensor of shape (N, out_channels, H_out, W_out), where H_out and W_out depend</span>
+<span class="sd">            on kernel_size, stride, padding, and output_padding.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; block = ConvTransposeBlock(128, 64, kernel_size=4, stride=2, padding=1)</span>
+<span class="sd">    &gt;&gt;&gt; out = block(x)  # x: (N, 128, H, W) -&gt; out: (N, 64, H_out, W_out)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">in_channels</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">out_channels</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">kernel_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">stride</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="n">padding</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">output_padding</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">activation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;relu&quot;</span><span class="p">,</span>
+        <span class="n">activation_kwargs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">use_batch_norm</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ConvTransposeBlock</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="n">layers</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ConvTranspose2d</span><span class="p">(</span>
+                <span class="n">in_channels</span><span class="p">,</span>
+                <span class="n">out_channels</span><span class="p">,</span>
+                <span class="n">kernel_size</span><span class="p">,</span>
+                <span class="n">stride</span><span class="o">=</span><span class="n">stride</span><span class="p">,</span>
+                <span class="n">padding</span><span class="o">=</span><span class="n">padding</span><span class="p">,</span>
+                <span class="n">output_padding</span><span class="o">=</span><span class="n">output_padding</span><span class="p">,</span>
+                <span class="n">bias</span><span class="o">=</span><span class="ow">not</span> <span class="n">use_batch_norm</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">use_batch_norm</span><span class="p">:</span>
+            <span class="n">layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">out_channels</span><span class="p">))</span>
+
+        <span class="n">activation_class</span> <span class="o">=</span> <span class="n">ACTIVATION_MAP</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">activation</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span> <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">)</span>
+        <span class="n">layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">activation_class</span><span class="p">(</span><span class="o">**</span><span class="p">(</span><span class="n">activation_kwargs</span> <span class="ow">or</span> <span class="p">{})))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">block</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="n">layers</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">block</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ConfigurableCNN">
+<a class="viewcode-back" href="../../_autosummary/src.conv.html#src.conv.ConfigurableCNN">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ConfigurableCNN</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A customizable convolutional neural network (CNN) built from a sequence of ConvBlock.</span>
+
+<span class="sd">    A customizable convolutional neural network (CNN) built from a sequence of ConvBlock</span>
+<span class="sd">    layers and ConvTransposeBlock layers defined by the user.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    layers_config : List[Dict[str, Any]]</span>
+<span class="sd">        A list of dictionaries, each specifying the parameters for a ConvBlock or ConvTransposeBlock.</span>
+<span class="sd">        Each dictionary should contain keys corresponding to the ConvBlock&#39;s</span>
+<span class="sd">        constructor parameters (e.g., in_channels, out_channels, kernel_size, etc.).</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    cnn : nn.Sequential</span>
+<span class="sd">        The assembled sequential CNN composed of the specified ConvBlock and ConvTransposeBlock layers.</span>
+
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+<span class="sd">    &gt;&gt;&gt; layers_config = [</span>
+<span class="sd">    ...     {conv:{&quot;in_channels&quot;: 3, &quot;out_channels&quot;: 32, &quot;kernel_size&quot;: 3, &quot;padding&quot;: &quot;same&quot;}},</span>
+<span class="sd">    ...     {conv:{&quot;in_channels&quot;: 32, &quot;out_channels&quot;: 64, &quot;kernel_size&quot;: 3, &quot;padding&quot;: &quot;same&quot;, &quot;pooling_type&quot;: &quot;max&quot;, &quot;pooling_kernel&quot;: 2}},</span>
+<span class="sd">    ...     {conv_transpose:{&quot;in_channels&quot;: 64, &quot;out_channels&quot;: 128, &quot;kernel_size&quot;: 3, &quot;padding&quot;: &quot;same&quot;}}</span>
+<span class="sd">    ... ]</span>
+<span class="sd">    &gt;&gt;&gt; model = ConfigurableCNN(layers_config)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layers_config</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ConfigurableCNN</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="n">layers</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">layer_cfg</span> <span class="ow">in</span> <span class="n">layers_config</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">layer_cfg</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">layer_cfg</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Each layer configuration must be a dictionary with only one key.&quot;</span><span class="p">)</span>
+            
+            <span class="n">layer_type</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">layer_cfg</span><span class="p">))</span>
+            <span class="n">layer_params</span> <span class="o">=</span> <span class="n">layer_cfg</span><span class="p">[</span><span class="n">layer_type</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">layer_type</span> <span class="o">==</span> <span class="s2">&quot;conv&quot;</span><span class="p">:</span>
+                <span class="n">layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ConvBlock</span><span class="p">(</span><span class="o">**</span><span class="n">layer_params</span><span class="p">))</span>
+            <span class="k">elif</span> <span class="n">layer_type</span> <span class="o">==</span> <span class="s2">&quot;conv_transpose&quot;</span><span class="p">:</span>
+                <span class="n">layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ConvTransposeBlock</span><span class="p">(</span><span class="o">**</span><span class="n">layer_params</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported layer type: </span><span class="si">{</span><span class="n">layer_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">cnn</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="n">layers</span><span class="p">)</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cnn</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div>
+
+    
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="c1"># Example usage</span>
+    <span class="n">layers_config</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">{</span><span class="s2">&quot;conv&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;in_channels&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;out_channels&quot;</span><span class="p">:</span> <span class="mi">32</span><span class="p">,</span> <span class="s2">&quot;kernel_size&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;padding&quot;</span><span class="p">:</span> <span class="s2">&quot;same&quot;</span><span class="p">}},</span>
+        <span class="p">{</span><span class="s2">&quot;conv&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;in_channels&quot;</span><span class="p">:</span> <span class="mi">32</span><span class="p">,</span> <span class="s2">&quot;out_channels&quot;</span><span class="p">:</span> <span class="mi">64</span><span class="p">,</span> <span class="s2">&quot;kernel_size&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;padding&quot;</span><span class="p">:</span> <span class="s2">&quot;same&quot;</span><span class="p">,</span> <span class="s2">&quot;pooling_type&quot;</span><span class="p">:</span> <span class="s2">&quot;max&quot;</span><span class="p">,</span> <span class="s2">&quot;pooling_kernel&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}},</span>
+        <span class="p">{</span><span class="s2">&quot;conv_transpose&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;in_channels&quot;</span><span class="p">:</span> <span class="mi">64</span><span class="p">,</span> <span class="s2">&quot;out_channels&quot;</span><span class="p">:</span> <span class="mi">128</span><span class="p">,</span> <span class="s2">&quot;kernel_size&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;padding&quot;</span><span class="p">:</span> <span class="s2">&quot;same&quot;</span><span class="p">}}</span>
+    <span class="p">]</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">ConfigurableCNN</span><span class="p">(</span><span class="n">layers_config</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Ramsses De Los Santos Mendoza.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

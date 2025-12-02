@@ -1,0 +1,323 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>src.utils &mdash; FDGAN 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=2709fde1"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            FDGAN
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">FDGAN</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">src.utils</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for src.utils</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">kornia.filters</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nn</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torchvision.transforms.functional</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">TF</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">PIL</span><span class="w"> </span><span class="kn">import</span> <span class="n">Image</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch.utils.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dataset</span>
+
+<span class="n">ACTIVATION_MAP</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;relu&quot;</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">,</span>
+    <span class="s2">&quot;leakyrelu&quot;</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">LeakyReLU</span><span class="p">,</span>
+    <span class="s2">&quot;tanh&quot;</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Tanh</span><span class="p">,</span>
+    <span class="s2">&quot;sigmoid&quot;</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sigmoid</span><span class="p">,</span>
+    <span class="s2">&quot;gelu&quot;</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">GELU</span><span class="p">,</span>
+    <span class="s2">&quot;selu&quot;</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">SELU</span><span class="p">,</span>
+    <span class="s2">&quot;elu&quot;</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">ELU</span><span class="p">,</span>
+    <span class="s2">&quot;identity&quot;</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Identity</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="n">POOLING_MAP</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">MaxPool2d</span><span class="p">,</span> <span class="s2">&quot;avg&quot;</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">AvgPool2d</span><span class="p">}</span>
+
+
+<div class="viewcode-block" id="get_lf_hf">
+<a class="viewcode-back" href="../../_autosummary/src.utils.html#src.utils.get_lf_hf">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_lf_hf</span><span class="p">(</span><span class="n">images</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the low- and high-frequency components of a batch of images.</span>
+
+<span class="sd">    This function extracts two complementary frequency representations from an</span>
+<span class="sd">    input batch of images. The low-frequency (LF) component is obtained using a</span>
+<span class="sd">    Gaussian blur, which removes fine details while preserving coarse structure.</span>
+<span class="sd">    The high-frequency (HF) component is computed by applying a Laplacian filter</span>
+<span class="sd">    to the grayscale version of the input and then replicating the result across</span>
+<span class="sd">    the RGB channels. Because the Laplacian may produce high-magnitude values,</span>
+<span class="sd">    the HF output is normalized to the range ``[-1, 1]`` using a hyperbolic</span>
+<span class="sd">    tangent to ensure numerical stability during training.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    images : torch.Tensor</span>
+<span class="sd">        Input batch of images with shape ``(B, C, H, W)`` and RGB channels.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    tuple[torch.Tensor, torch.Tensor]</span>
+<span class="sd">        A pair ``(lf, hf)`` where:</span>
+
+<span class="sd">        - ``lf`` is the low-frequency component obtained via Gaussian blur.</span>
+<span class="sd">        - ``hf`` is the high-frequency component derived from the Laplacian and</span>
+<span class="sd">          normalized to ``[-1, 1]``.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    - The HF component is expanded to three channels so that both LF and HF can</span>
+<span class="sd">      be concatenated with the original RGB image if needed (e.g., for</span>
+<span class="sd">      discriminators in GAN architectures).</span>
+<span class="sd">    - Normalization with ``tanh`` prevents unstable gradients that may arise</span>
+<span class="sd">      from the Laplacian operator.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">lf</span> <span class="o">=</span> <span class="n">TF</span><span class="o">.</span><span class="n">gaussian_blur</span><span class="p">(</span><span class="n">images</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">3.0</span><span class="p">)</span>
+
+    <span class="n">gray</span> <span class="o">=</span> <span class="n">TF</span><span class="o">.</span><span class="n">rgb_to_grayscale</span><span class="p">(</span><span class="n">images</span><span class="p">)</span>
+    <span class="n">laplacian</span> <span class="o">=</span> <span class="n">kornia</span><span class="o">.</span><span class="n">filters</span><span class="o">.</span><span class="n">laplacian</span><span class="p">(</span><span class="n">gray</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">hf</span> <span class="o">=</span> <span class="n">laplacian</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">hf</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tanh</span><span class="p">(</span><span class="n">hf</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">lf</span><span class="p">,</span> <span class="n">hf</span></div>
+
+
+
+<div class="viewcode-block" id="prepare_discriminator_input">
+<a class="viewcode-back" href="../../_autosummary/src.utils.html#src.utils.prepare_discriminator_input">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">prepare_discriminator_input</span><span class="p">(</span>
+    <span class="n">img</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">lf</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">hf</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Concatenate an image batch with its low- and high-frequency components.</span>
+
+<span class="sd">    This function prepares the input for a discriminator by concatenating, along</span>
+<span class="sd">    the channel dimension, the original RGB images together with their</span>
+<span class="sd">    corresponding low-frequency (LF) and high-frequency (HF) representations.</span>
+<span class="sd">    The resulting tensor has nine channels: three from the original image,</span>
+<span class="sd">    three from the LF component, and three from the HF component.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    img : torch.Tensor</span>
+<span class="sd">        Batch of RGB images with shape ``(B, 3, H, W)``.</span>
+<span class="sd">    lf : torch.Tensor</span>
+<span class="sd">        Batch of low-frequency components with shape ``(B, 3, H, W)``.</span>
+<span class="sd">    hf : torch.Tensor</span>
+<span class="sd">        Batch of high-frequency components with shape ``(B, 3, H, W)``.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    torch.Tensor</span>
+<span class="sd">        Concatenated tensor of shape ``(B, 9, H, W)`` corresponding to</span>
+<span class="sd">        ``[img or lf or hf]`` along the channel dimension.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">img</span><span class="p">,</span> <span class="n">lf</span><span class="p">,</span> <span class="n">hf</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="weights_init_normal">
+<a class="viewcode-back" href="../../_autosummary/src.utils.html#src.utils.weights_init_normal">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">weights_init_normal</span><span class="p">(</span><span class="n">m</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Initialize model weights following a normal distribution scheme.</span>
+
+<span class="sd">    This function is intended to be passed to ``nn.Module.apply`` to initialize</span>
+<span class="sd">    convolutional and batch-normalization layers commonly used in GANs.</span>
+<span class="sd">    Convolutional layers are initialized with a normal distribution centered at</span>
+<span class="sd">    0, while batch-normalization layers are initialized with weights centered at</span>
+<span class="sd">    1 and biases at 0.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    m : nn.Module</span>
+<span class="sd">        A PyTorch module. If ``m`` is an instance of ``Conv2d`` or</span>
+<span class="sd">        ``ConvTranspose2d``, its weights are initialized using</span>
+<span class="sd">        ``N(0, 0.02)``. If ``m`` is a ``BatchNorm2d`` or ``BatchNorm1d`` layer,</span>
+<span class="sd">        its weights are initialized using ``N(1, 0.02)`` and its biases are set</span>
+<span class="sd">        to zero.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    - This initialization scheme follows standard practices in GAN training</span>
+<span class="sd">      (e.g., DCGAN), improving stability during early optimization.</span>
+<span class="sd">    - Use as: ``model.apply(weights_init_normal)``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">ConvTranspose2d</span><span class="p">)):</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">normal_</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">bias</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">constant_</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">bias</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm1d</span><span class="p">)):</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">normal_</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">)</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">constant_</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">bias</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="DehazingDataset">
+<a class="viewcode-back" href="../../_autosummary/src.utils.html#src.utils.DehazingDataset">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">DehazingDataset</span><span class="p">(</span><span class="n">Dataset</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A paired-image dataset for single-image dehazing tasks.</span>
+
+<span class="sd">    This dataset assumes a directory structure:</span>
+
+<span class="sd">    ``root_dir/clear`` — clean (ground-truth) images</span>
+<span class="sd">    ``root_dir/hazy`` — corresponding hazy/degraded images</span>
+
+<span class="sd">    Both subdirectories must contain images with matching filenames.</span>
+<span class="sd">    The dataset returns pairs ``(hazy, clear)`` suitable for supervised</span>
+<span class="sd">    training of dehazing models.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    root_dir : str or Path-like</span>
+<span class="sd">        Path to the dataset root directory containing ``clear/`` and ``hazy/``.</span>
+<span class="sd">    transform : callable, optional</span>
+<span class="sd">        A function or transform applied to both images. It must accept and</span>
+<span class="sd">        return a PIL image or a tensor. When provided, the same transform is</span>
+<span class="sd">        applied to both hazy and clear images.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    root_dir : str</span>
+<span class="sd">        Path to the dataset root.</span>
+<span class="sd">    clear_dir : str</span>
+<span class="sd">        Directory containing the clean images.</span>
+<span class="sd">    hazy_dir : str</span>
+<span class="sd">        Directory containing the hazy images.</span>
+<span class="sd">    images : list of str</span>
+<span class="sd">        Filenames present in ``clear_dir`` (matching files are expected in</span>
+<span class="sd">        ``hazy_dir``).</span>
+<span class="sd">    transform : callable or None</span>
+<span class="sd">        Transform applied to both images in a sample.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">transform</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Callable</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">root_dir</span> <span class="o">=</span> <span class="n">root_dir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transform</span> <span class="o">=</span> <span class="n">transform</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clear_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root_dir</span><span class="p">,</span> <span class="s2">&quot;clear&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hazy_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root_dir</span><span class="p">,</span> <span class="s2">&quot;hazy&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">images</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">clear_dir</span><span class="p">)</span> <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">endswith</span><span class="p">((</span><span class="s2">&quot;.jpg&quot;</span><span class="p">,</span> <span class="s2">&quot;.png&quot;</span><span class="p">))</span>
+        <span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the number of image pairs in the dataset.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">images</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Image</span><span class="o">.</span><span class="n">Image</span><span class="p">],</span> <span class="n">Union</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Image</span><span class="o">.</span><span class="n">Image</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load and return a hazy/clear image pair.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        idx : int</span>
+<span class="sd">            Index of the image pair to load.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tuple[torch.Tensor or PIL.Image, torch.Tensor or PIL.Image]</span>
+<span class="sd">            A tuple ``(hazy_img, clear_img)``. If a transform is provided,</span>
+<span class="sd">            both elements are tensors. Otherwise, they are returned as PIL</span>
+<span class="sd">            images converted to RGB.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">img_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">images</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+
+        <span class="n">clear_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">clear_dir</span><span class="p">,</span> <span class="n">img_name</span><span class="p">)</span>
+        <span class="n">hazy_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hazy_dir</span><span class="p">,</span> <span class="n">img_name</span><span class="p">)</span>
+
+        <span class="n">clear_img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">clear_path</span><span class="p">)</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;RGB&quot;</span><span class="p">)</span>
+        <span class="n">hazy_img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">hazy_path</span><span class="p">)</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;RGB&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="p">:</span>
+            <span class="n">clear_img</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">clear_img</span><span class="p">)</span>
+            <span class="n">hazy_img</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">hazy_img</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">hazy_img</span><span class="p">,</span> <span class="n">clear_img</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Ramsses De Los Santos Mendoza.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
