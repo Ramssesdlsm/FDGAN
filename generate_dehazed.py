@@ -16,7 +16,13 @@ from src.gan import FDGANGenerator
 
 def get_pretrained_fdgan():
     """Download the pretrained FDGAN generator from HuggingFace Hub."""
-    model_path = hf_hub_download(repo_id="Ramssesdlsm/FDGAN", filename="FDGAN-generator.pth")
+    print("Looking for pretrained FDGAN generator...")
+    try:
+        model_path = hf_hub_download(repo_id="Ramssesdlsm/FDGAN", filename="FDGAN-generator.pth", local_files_only=True)
+        print("Pretrained FDGAN generator found locally.")
+    except (FileNotFoundError, ValueError):
+        model_path = hf_hub_download(repo_id="Ramssesdlsm/FDGAN", filename="FDGAN-generator.pth")
+        print("Pretrained FDGAN generator downloaded from HuggingFace Hub.")
     return model_path
 
 def pil_from_tensor(tensor: torch.Tensor) -> Image.Image:
@@ -56,8 +62,8 @@ def main():
     parser.add_argument(
         "--checkpoint",
         required=False,
-        default=get_pretrained_fdgan(),
-        help="Path to the generator .pth file. Default: pretrained FDGAN model from HuggingFace Hub.",
+        default=None,
+        help="Path to the generator .pth file. If not provided, downloads from Hugging Face.",
     )
     parser.add_argument(
         "--input", required=True, help="Input hazy image (JPG, PNG, etc.)"
@@ -90,11 +96,14 @@ def main():
     print(f"Loading generator on device={device}...")
     gen = FDGANGenerator(output_same_size=True).to(device)
 
-    if not os.path.isfile(args.checkpoint):
-        raise FileNotFoundError(f"Checkpoint not found: {args.checkpoint}")
+    checkpoint_path = args.checkpoint
+    if checkpoint_path is None:
+        checkpoint_path = get_pretrained_fdgan()
+    if not os.path.isfile(checkpoint_path):
+        raise FileNotFoundError(f"Checkpoint not found: {checkpoint_path}")
 
     # Load the generator state
-    state = torch.load(args.checkpoint, map_location=device, weights_only=True)
+    state = torch.load(checkpoint_path, map_location=device, weights_only=True)
 
     gen.load_state_dict(state)
 
